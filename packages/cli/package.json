@@ -21,7 +21,8 @@
   "scripts": {
     "build": "pnpm run clean && node esbuild.config.js && tsc --emitDeclarationOnly",
     "dev": "node esbuild.config.js --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "srt",
@@ -34,14 +35,14 @@
   "author": "",
   "license": "MIT",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "@srt2fcpx/core": "workspace:*",
-    "commander": "^11.0.0"
+    "commander": "^14.0.2"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0"
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
   }
 }

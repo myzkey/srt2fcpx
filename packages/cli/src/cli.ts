@@ -2,7 +2,24 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, basename, extname } from 'node:path';
 import { Command } from 'commander';
 import { convertSrtToFcpxml, parseSrt } from '@srt2fcpx/core';
-import type { Srt2FcpxOptions } from '@srt2fcpx/core';
+import type { Srt2FcpxOptions, SrtCue } from '@srt2fcpx/core';
+
+interface CliOptions {
+  output?: string;
+  titleName?: string;
+  formatVersion?: string;
+  frameRate?: number;
+  width?: number;
+  height?: number;
+  fontFamily?: string;
+  fontSize?: number;
+  textColor?: string;
+  bgColor?: string;
+  lineSpacing?: number;
+  dryRun?: boolean;
+  verbose?: boolean;
+  quiet?: boolean;
+}
 
 const program = new Command();
 
@@ -25,7 +42,7 @@ program
   .option('--dry-run', 'Parse only, do not generate XML')
   .option('-v, --verbose', 'Verbose output')
   .option('-q, --quiet', 'Suppress non-error output')
-  .action(async (inputPath: string, cmdOptions: any) => {
+  .action(async (inputPath: string, cmdOptions: CliOptions) => {
     try {
       const {
         output,
@@ -72,7 +89,7 @@ program
 
       if (parseResult.errors.length > 0) {
         logVerbose('Parse warnings:');
-        parseResult.errors.forEach(err => logVerbose(`  - ${err}`));
+        parseResult.errors.forEach((err: string) => logVerbose(`  - ${err}`));
       }
 
       log(`Parsed ${parseResult.cues.length} subtitle cues`);
@@ -89,7 +106,7 @@ program
         log(`  Duration: ${parseResult.cues[parseResult.cues.length - 1].endMs / 1000}s`);
         log(`  Warnings: ${parseResult.errors.length}`);
         if (verbose) {
-          parseResult.cues.slice(0, 5).forEach(cue => {
+          parseResult.cues.slice(0, 5).forEach((cue: SrtCue) => {
             log(`\n  Cue #${cue.index}:`);
             log(`    Time: ${cue.startMs}ms - ${cue.endMs}ms`);
             log(`    Text: ${cue.text.substring(0, 50)}${cue.text.length > 50 ? '...' : ''}`);
@@ -102,25 +119,20 @@ program
       }
 
       // Build conversion options
-      const options: Srt2FcpxOptions = {
-        titleName: titleName || basename(inputPath, extname(inputPath)),
-        formatVersion,
-        frameRate,
-        width,
-        height,
-        fontFamily,
-        fontSize,
-        textColor,
-        backgroundColor: bgColor,
-        lineSpacing,
-      };
+      const options: Partial<Srt2FcpxOptions> = {};
 
-      // Remove undefined values
-      Object.keys(options).forEach(key => {
-        if ((options as any)[key] === undefined) {
-          delete (options as any)[key];
-        }
-      });
+      // Only add defined values
+      if (titleName !== undefined) options.titleName = titleName;
+      else options.titleName = basename(inputPath, extname(inputPath));
+      if (formatVersion !== undefined) options.formatVersion = formatVersion;
+      if (frameRate !== undefined) options.frameRate = frameRate;
+      if (width !== undefined) options.width = width;
+      if (height !== undefined) options.height = height;
+      if (fontFamily !== undefined) options.fontFamily = fontFamily;
+      if (fontSize !== undefined) options.fontSize = fontSize;
+      if (textColor !== undefined) options.textColor = textColor;
+      if (bgColor !== undefined) options.backgroundColor = bgColor;
+      if (lineSpacing !== undefined) options.lineSpacing = lineSpacing;
 
       logVerbose('Converting to FCPXML...');
 

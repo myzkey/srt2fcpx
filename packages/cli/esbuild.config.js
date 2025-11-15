@@ -1,7 +1,7 @@
 import * as esbuild from 'esbuild';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readFileSync, writeFileSync, chmodSync } from 'node:fs';
+import { readFileSync, writeFileSync, chmodSync, existsSync } from 'node:fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -10,9 +10,21 @@ const aliasPlugin = {
   name: 'alias',
   setup(build) {
     // ~/* -> src/*
-    build.onResolve({ filter: /^~\// }, args => ({
-      path: path.resolve(__dirname, 'src', args.path.slice(2)),
-    }));
+    build.onResolve({ filter: /^~\// }, args => {
+      const relativePath = args.path.slice(2); // Remove ~/
+      const resolved = path.resolve(__dirname, 'src', relativePath);
+
+      // Try with .ts extension if file doesn't exist
+      const extensions = ['.ts', '.tsx', '.js', '.jsx', ''];
+      for (const ext of extensions) {
+        const pathWithExt = resolved + ext;
+        if (existsSync(pathWithExt)) {
+          return { path: pathWithExt };
+        }
+      }
+
+      return { path: resolved };
+    });
   },
 };
 

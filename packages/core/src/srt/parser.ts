@@ -1,4 +1,4 @@
-import { SrtCue, SrtParseResult } from '../types';
+import { SrtCue, SrtParseResult } from '~/types';
 
 /**
  * Parse SRT subtitle file content
