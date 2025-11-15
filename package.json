@@ -1,0 +1,24 @@
+{
+  "name": "srt2fcpx-monorepo",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Convert SRT subtitle files to Final Cut Pro FCPXML format - Monorepo",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm -r dev",
+    "test": "pnpm -r test",
+    "clean": "pnpm -r clean"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "esbuild": "^0.27.0",
+    "esbuild-plugin-alias": "^0.2.1",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}

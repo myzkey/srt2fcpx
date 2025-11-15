@@ -1,0 +1,47 @@
+{
+  "name": "srt2fcpx",
+  "version": "0.1.0",
+  "description": "Convert SRT subtitle files to Final Cut Pro FCPXML format",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "srt2fcpx": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && node esbuild.config.js && tsc --emitDeclarationOnly",
+    "dev": "node esbuild.config.js --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "srt",
+    "fcpxml",
+    "final-cut-pro",
+    "subtitle",
+    "converter",
+    "cli"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@srt2fcpx/core": "workspace:*",
+    "commander": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
