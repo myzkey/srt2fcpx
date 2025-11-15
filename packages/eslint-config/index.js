@@ -23,7 +23,7 @@ export default [
     },
     rules: {
       ...tseslint.configs.recommended.rules,
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_' },
@@ -41,17 +41,6 @@ export default [
         console: 'readonly',
       },
     },
-  },
-  {
-    ignores: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/.pnpm-store/**',
-      'pnpm-lock.yaml',
-      '**/tests/**',
-      '**/*.config.js',
-      '**/*.config.ts',
-    ],
   },
   prettier,
 ];

@@ -22,7 +22,9 @@
     "build": "pnpm run clean && node esbuild.config.js && tsc --emitDeclarationOnly",
     "dev": "node esbuild.config.js --watch",
     "clean": "rm -rf dist",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "keywords": [
     "srt",
@@ -32,8 +34,17 @@
     "converter",
     "cli"
   ],
-  "author": "",
+  "author": "myzkey",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/myzkey/srt2fcpx.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/myzkey/srt2fcpx/issues"
+  },
+  "homepage": "https://github.com/myzkey/srt2fcpx#readme",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -42,7 +53,10 @@
     "commander": "^14.0.2"
   },
   "devDependencies": {
+    "@srt2fcpx/eslint-config": "workspace:*",
+    "@srt2fcpx/tsconfig": "workspace:*",
     "@types/node": "^24.10.1",
+    "eslint": "9.39.1",
     "typescript": "^5.9.3"
   }
 }
