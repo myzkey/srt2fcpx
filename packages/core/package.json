@@ -13,18 +13,24 @@
     }
   },
   "scripts": {
-    "build": "pnpm run clean && node esbuild.config.js && tsc --emitDeclarationOnly",
+    "build": "pnpm run clean && node esbuild.config.js && tsc --emitDeclarationOnly && tsc-alias",
     "dev": "node esbuild.config.js --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "clean": "rm -rf dist",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "devDependencies": {
+    "@srt2fcpx/eslint-config": "workspace:*",
+    "@srt2fcpx/tsconfig": "workspace:*",
     "@types/node": "^24.10.1",
+    "eslint": "9.39.1",
+    "tsc-alias": "^1.8.10",
     "typescript": "^5.9.3",
     "vitest": "^4.0.9"
   }

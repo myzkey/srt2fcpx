@@ -10,8 +10,8 @@
     "test": "pnpm -r test",
     "clean": "pnpm -r clean",
     "typecheck": "pnpm -r typecheck",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint:fix",
     "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test"
   },
   "engines": {
@@ -20,14 +20,9 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
     "@types/node": "^24.10.1",
-    "@typescript-eslint/eslint-plugin": "^8.46.4",
-    "@typescript-eslint/parser": "^8.46.4",
     "esbuild": "^0.27.0",
     "esbuild-plugin-alias": "^0.2.1",
-    "eslint": "9.39.1",
-    "eslint-config-prettier": "^10.1.8",
     "typescript": "^5.9.3",
     "vitest": "^4.0.9"
   }
