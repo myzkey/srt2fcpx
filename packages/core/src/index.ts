@@ -2,17 +2,17 @@
  * @srt2fcpx/core - Core library for SRT to FCPXML conversion
  */
 
-import { parseSrt } from './srt/parser';
-import { buildFcpxml } from './fcpxml/builder';
-import type { Srt2FcpxOptions, SrtCue, SrtParseResult } from './types';
+import { parseSrt } from '~/srt/parser';
+import { buildFcpxml } from '~/fcpxml/builder';
+import type { Srt2FcpxOptions, SrtCue, SrtParseResult } from '~/types';
 
 // Export types
 export type { Srt2FcpxOptions, SrtCue, SrtParseResult };
-export { DEFAULT_OPTIONS } from './types';
+export { DEFAULT_OPTIONS } from '~/types';
 
 // Export functions
-export { parseSrt, formatSrtTimecode, stripHtmlTags } from './srt/parser';
-export { buildFcpxml } from './fcpxml/builder';
+export { parseSrt, formatSrtTimecode, stripHtmlTags } from '~/srt/parser';
+export { buildFcpxml } from '~/fcpxml/builder';
 
 /**
  * Convert SRT content to FCPXML

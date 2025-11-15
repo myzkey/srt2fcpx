@@ -2,12 +2,17 @@
   "name": "srt2fcpx-monorepo",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "description": "Convert SRT subtitle files to Final Cut Pro FCPXML format - Monorepo",
   "scripts": {
     "build": "pnpm -r build",
     "dev": "pnpm -r dev",
     "test": "pnpm -r test",
-    "clean": "pnpm -r clean"
+    "clean": "pnpm -r clean",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "check": "pnpm typecheck && pnpm lint && pnpm build && pnpm test"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -15,10 +20,15 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
+    "@typescript-eslint/eslint-plugin": "^8.46.4",
+    "@typescript-eslint/parser": "^8.46.4",
     "esbuild": "^0.27.0",
     "esbuild-plugin-alias": "^0.2.1",
-    "typescript": "^5.0.0",
-    "vitest": "^1.0.0"
+    "eslint": "9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.9"
   }
 }

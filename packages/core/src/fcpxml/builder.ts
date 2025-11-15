@@ -1,5 +1,5 @@
-import { SrtCue, Srt2FcpxOptions, DEFAULT_OPTIONS } from '../types';
-import { stripHtmlTags } from '../srt/parser';
+import { SrtCue, Srt2FcpxOptions, DEFAULT_OPTIONS } from '~/types';
+import { stripHtmlTags } from '~/srt/parser';
 
 /**
  * Convert milliseconds to FCPXML fraction format with frame alignment
