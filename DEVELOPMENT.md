@@ -137,8 +137,14 @@ All 88 tests should pass.
 
 ## Release Process
 
-1. Update version in package.json files
-2. Update CHANGELOG.md
-3. Build: `pnpm build`
-4. Test: `pnpm test`
-5. Publish to npm
+This project uses Changesets for automated version management and publishing.
+
+See [RELEASING.md](./RELEASING.md) for detailed release instructions.
+
+### Quick Release Steps
+
+1. Create a changeset: `pnpm changeset`
+2. Commit and push to a branch
+3. Create PR and merge to `main`
+4. GitHub Actions will create a "Release" PR
+5. Merge the "Release" PR to publish to npm

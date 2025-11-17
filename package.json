@@ -5,13 +5,16 @@
   "description": "Convert SRT subtitle files to Final Cut Pro FCPXML format",
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter @srt2fcpx/core build && pnpm --filter @srt2fcpx/cli build",
+    "build": "pnpm --filter @srt2fcpx/core build && pnpm --filter srt2fcpx build",
     "test": "pnpm --filter @srt2fcpx/core test",
     "test:watch": "pnpm --filter @srt2fcpx/core test:watch",
-    "clean": "pnpm --parallel --filter '@srt2fcpx/*' clean",
+    "clean": "pnpm --parallel --filter '@srt2fcpx/*' clean && pnpm --filter srt2fcpx clean",
     "typecheck": "pnpm --filter @srt2fcpx/core typecheck",
     "lint": "pnpm --filter @srt2fcpx/core lint",
-    "srt2fcpx": "node packages/cli/dist/cli.js"
+    "srt2fcpx": "node packages/cli/dist/cli.js",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "pnpm build && changeset publish"
   },
   "keywords": [
     "srt",
