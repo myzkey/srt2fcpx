@@ -14,6 +14,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      id-token: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,13 +35,20 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Configure npm authentication
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          npm whoami
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
           publish: pnpm release
-          commit: 'chore: release'
-          title: 'chore: release'
+          version: pnpm changeset version
+          title: 'release: version packages'
+          commit: 'release: update versions'
+          createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
