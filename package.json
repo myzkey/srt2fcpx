@@ -10,6 +10,7 @@
     "test:watch": "pnpm --filter @srt2fcpx/core test:watch",
     "clean": "pnpm --parallel --filter '@srt2fcpx/*' clean",
     "typecheck": "pnpm --filter @srt2fcpx/core typecheck",
+    "lint": "pnpm --filter @srt2fcpx/core lint",
     "srt2fcpx": "node packages/cli/dist/cli.js"
   },
   "keywords": [
