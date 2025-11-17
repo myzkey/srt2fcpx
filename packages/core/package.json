@@ -1,6 +1,6 @@
 {
   "name": "@srt2fcpx/core",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "private": true,
   "description": "Core library for SRT to FCPXML conversion (internal use only)",
   "type": "module",

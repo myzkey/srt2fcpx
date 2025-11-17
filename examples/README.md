@@ -10,6 +10,8 @@ examples/
 │   ├── sample.srt      # Japanese subtitle sample
 │   └── english-sample.srt  # English subtitle sample
 ├── output/             # Generated FCPXML files (gitignored)
+├── srt2fcpx.config.json    # Example config file
+├── .srt2fcpxrc.example.json  # Alternative config example
 └── convert.mjs         # Conversion script
 ```
 
@@ -50,6 +52,65 @@ node convert.mjs input/english-sample.srt \
   --color "#FFFF00FF" \
   --output output/english.fcpxml
 ```
+
+### Using Configuration Files
+
+The CLI automatically discovers and uses configuration files. This directory includes example config files:
+
+**`srt2fcpx.config.json`** - Full configuration example with all available options:
+
+```json
+{
+  "title": "My Video Project",
+  "fps": 30,
+  "font": "Hiragino Sans",
+  "size": 100,
+  "face": "W8",
+  "color": "#FFFFFFFF",
+  "strokeColor": "#000000FF",
+  "strokeWidth": -8
+}
+```
+
+**`.srt2fcpxrc.example.json`** - Minimal configuration example:
+
+```json
+{
+  "title": "Converted from SRT",
+  "fps": 24,
+  "font": "Arial",
+  "size": 80,
+  "color": "#FFFF00FF"
+}
+```
+
+When you run the CLI in this directory, it will automatically load `srt2fcpx.config.json`:
+
+```bash
+# Uses settings from srt2fcpx.config.json
+node convert.mjs input/sample.srt -o output/configured.fcpxml
+```
+
+You can override config file settings with CLI options:
+
+```bash
+# Config file has fps: 30, this overrides to 60
+node convert.mjs input/sample.srt -o output/override.fcpxml --fps 60
+```
+
+You can specify a custom config file:
+
+```bash
+# Use .srt2fcpxrc.example.json instead
+node convert.mjs input/sample.srt --config .srt2fcpxrc.example.json
+```
+
+**Config file discovery priority:**
+1. `.srt2fcpxrc.json` in current directory
+2. `srt2fcpx.config.json` in current directory
+3. `.srt2fcpxrc.json` in home directory
+
+**Option priority:** CLI options > Config file > Default values
 
 ## Available Options
 

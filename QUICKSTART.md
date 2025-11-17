@@ -26,6 +26,30 @@ pnpm srt2fcpx examples/input/english-sample.srt \
   -o examples/output/my-output.fcpxml
 ```
 
+## Use Config File
+
+Create a config file to set default options:
+
+```bash
+# Create a config file
+cat > srt2fcpx.config.json << EOF
+{
+  "title": "My Project",
+  "fps": 30,
+  "font": "Hiragino Sans",
+  "size": 100
+}
+EOF
+
+# Now all conversions will use these defaults
+pnpm srt2fcpx examples/input/sample.srt -o examples/output/configured.fcpxml
+
+# CLI options override config file settings
+pnpm srt2fcpx examples/input/sample.srt --fps 60 -o examples/output/override.fcpxml
+```
+
+Config file names: `.srt2fcpxrc.json` or `srt2fcpx.config.json`
+
 ## Import to Final Cut Pro
 
 1. Open Final Cut Pro
