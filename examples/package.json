@@ -1,0 +1,9 @@
+{
+  "name": "srt2fcpx-examples",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@srt2fcpx/core": "workspace:*"
+  }
+}

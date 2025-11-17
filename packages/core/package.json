@@ -13,7 +13,8 @@
     }
   },
   "scripts": {
-    "build": "pnpm run clean && node esbuild.config.js && tsc --emitDeclarationOnly && tsc-alias",
+    "build": "pnpm run clean && node esbuild.config.js && tsc --emitDeclarationOnly && tsc-alias && pnpm run copy-fixtures",
+    "copy-fixtures": "mkdir -p dist && cp -r fixtures dist/fixtures",
     "dev": "node esbuild.config.js --watch",
     "test": "vitest run",
     "test:watch": "vitest",

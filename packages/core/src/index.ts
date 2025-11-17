@@ -2,17 +2,17 @@
  * @srt2fcpx/core - Core library for SRT to FCPXML conversion
  */
 
-import { parseSrt } from '~/srt/parser';
-import { buildFcpxml } from '~/fcpxml/builder';
-import type { Srt2FcpxOptions, SrtCue, SrtParseResult } from '~/types';
+import { buildFcpxmlFromTemplate } from "~/fcpxml/builder";
+import { parseSrt } from "~/srt/parser";
+import type { Srt2FcpxOptions, SrtCue, SrtParseResult } from "~/types";
 
 // Export types
+export { DEFAULT_OPTIONS } from "~/types";
 export type { Srt2FcpxOptions, SrtCue, SrtParseResult };
-export { DEFAULT_OPTIONS } from '~/types';
 
 // Export functions
-export { parseSrt, formatSrtTimecode, stripHtmlTags } from '~/srt/parser';
-export { buildFcpxml } from '~/fcpxml/builder';
+export { buildFcpxml, buildFcpxmlFromTemplate } from "~/fcpxml/builder";
+export { formatSrtTimecode, parseSrt, stripHtmlTags } from "~/srt/parser";
 
 /**
  * Convert SRT content to FCPXML
@@ -30,11 +30,11 @@ export function convertSrtToFcpxml(
 
   // Check for fatal errors
   if (parseResult.cues.length === 0) {
-    throw new Error('No valid SRT cues found in input');
+    throw new Error("No valid SRT cues found in input");
   }
 
-  // Build FCPXML
-  const fcpxml = buildFcpxml(parseResult.cues, options);
+  // Build FCPXML using template-based approach
+  const fcpxml = buildFcpxmlFromTemplate(parseResult.cues, options);
 
   return fcpxml;
 }

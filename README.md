@@ -113,6 +113,10 @@ interface SrtCue {
 - `-v, --verbose` - Verbose output
 - `-q, --quiet` - Suppress non-error output
 
+## Contributing
+
+See [DEVELOPMENT.md](./DEVELOPMENT.md) for development setup and guidelines.
+
 ## License
 
 MIT

@@ -86,22 +86,22 @@ describe('FCPXML Builder', () => {
     it('should convert text color to FCPXML format', () => {
       const xml = buildFcpxml(basicCues, { textColor: '#FF0000FF' });
 
-      // Red color: #FF0000FF -> 1.0 0.0 0.0 1.0
-      expect(xml).toContain('fontColor="1.000000 0.000000 0.000000 1.000000"');
+      // Red color: #FF0000FF -> 1 0 0 1 (integers for 0 and 1, decimals for fractions)
+      expect(xml).toContain('fontColor="1 0 0 1"');
     });
 
     it('should convert background color to FCPXML format', () => {
       const xml = buildFcpxml(basicCues, { backgroundColor: '#00FF00FF' });
 
-      // Green color: #00FF00FF -> 0.0 1.0 0.0 1.0
-      expect(xml).toContain('backgroundColor="0.000000 1.000000 0.000000 1.000000"');
+      // Green color: #00FF00FF -> 0 1 0 1 (integers for 0 and 1)
+      expect(xml).toContain('backgroundColor="0 1 0 1"');
     });
 
     it('should handle hex colors without alpha channel', () => {
       const xml = buildFcpxml(basicCues, { textColor: '#0000FF' });
 
-      // Blue color without alpha: #0000FF -> 0.0 0.0 1.0 1.0
-      expect(xml).toContain('fontColor="0.000000 0.000000 1.000000 1.000000"');
+      // Blue color without alpha: #0000FF -> 0 0 1 1
+      expect(xml).toContain('fontColor="0 0 1 1"');
     });
 
     it('should escape XML special characters in text', () => {
@@ -398,10 +398,10 @@ describe('FCPXML Builder', () => {
         backgroundColor: '#00000040', // 25% opacity
       });
 
-      // Alpha channel: 0x80 = 128/255 ≈ 0.502
-      expect(xml).toContain('fontColor="1.000000 1.000000 1.000000 0.5');
+      // Alpha channel: 0x80 = 128/255 ≈ 0.502 (integers for 0/1, decimals for fractions)
+      expect(xml).toContain('fontColor="1 1 1 0.5');
       // Alpha channel: 0x40 = 64/255 ≈ 0.251
-      expect(xml).toContain('backgroundColor="0.000000 0.000000 0.000000 0.2');
+      expect(xml).toContain('backgroundColor="0 0 0 0.2');
     });
   });
 });

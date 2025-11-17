@@ -1,0 +1,5 @@
+# Output directory (generated files)
+output/
+
+# Node modules
+node_modules/
