@@ -12,7 +12,10 @@
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "lint:fix": "pnpm -r lint:fix",
-    "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test"
+    "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "pnpm build && changeset publish"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -20,6 +23,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "@types/node": "^24.10.1",
     "esbuild": "^0.27.0",
     "esbuild-plugin-alias": "^0.2.1",
