@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fcpxml>
+<fcpxml version="1.13">
+    <resources>
+        <format id="r1" name="FFVideoFormat1080p24" frameDuration="100/2400s" width="1920" height="1080" colorSpace="1-1-1 (Rec. 709)"/>
+        <effect id="r2" name="Basic Title" uid=".../Titles.localized/Bumper:Opener.localized/Basic Title.localized/Basic Title.moti"/>
+    </resources>
+    <library location="file:///Users/srt2fcpx/Library.fcpbundle/">
+        <event name="Converted from SRT" uid="AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA">
+            <project name="Converted from SRT" uid="BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB" modDate="2025-01-01 00:00:00 +0000">
+                <sequence format="r1" duration="{SEQUENCE_DURATION}" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k">
+                    <spine>
+{TITLES}
+                    </spine>
+                </sequence>
+            </project>
+        </event>
+    </library>
+</fcpxml>

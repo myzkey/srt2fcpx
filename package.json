@@ -1,33 +1,30 @@
 {
   "name": "srt2fcpx-monorepo",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
+  "description": "Convert SRT subtitle files to Final Cut Pro FCPXML format",
   "type": "module",
-  "description": "Convert SRT subtitle files to Final Cut Pro FCPXML format - Monorepo",
   "scripts": {
-    "build": "pnpm -r build",
-    "dev": "pnpm -r dev",
-    "test": "pnpm -r test",
-    "clean": "pnpm -r clean",
-    "typecheck": "pnpm -r typecheck",
-    "lint": "pnpm -r lint",
-    "lint:fix": "pnpm -r lint:fix",
-    "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
-    "changeset": "changeset",
-    "version": "changeset version",
-    "release": "pnpm build && changeset publish"
+    "build": "pnpm --filter @srt2fcpx/core build && pnpm --filter @srt2fcpx/cli build",
+    "test": "pnpm --filter @srt2fcpx/core test",
+    "test:watch": "pnpm --filter @srt2fcpx/core test:watch",
+    "clean": "pnpm --parallel --filter '@srt2fcpx/*' clean",
+    "typecheck": "pnpm --filter @srt2fcpx/core typecheck",
+    "lint": "pnpm --filter @srt2fcpx/core lint",
+    "srt2fcpx": "node packages/cli/dist/cli.js"
   },
-  "engines": {
-    "node": ">=20.0.0"
-  },
+  "keywords": [
+    "srt",
+    "fcpxml",
+    "final-cut-pro",
+    "subtitle",
+    "conversion"
+  ],
   "author": "",
   "license": "MIT",
-  "devDependencies": {
-    "@changesets/cli": "^2.29.7",
-    "@types/node": "^24.10.1",
-    "esbuild": "^0.27.0",
-    "esbuild-plugin-alias": "^0.2.1",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.9"
-  }
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
 }

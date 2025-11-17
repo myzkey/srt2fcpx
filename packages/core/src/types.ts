@@ -23,11 +23,20 @@ export interface Srt2FcpxOptions {
   /** Font size in pixels */
   fontSize?: number;
 
+  /** Font face/weight (e.g., "Regular", "Bold", "W8") */
+  fontFace?: string;
+
   /** Text color in #RRGGBB or #RRGGBBAA format */
   textColor?: string;
 
   /** Background color in #RRGGBB or #RRGGBBAA format */
   backgroundColor?: string;
+
+  /** Stroke (outline) color in #RRGGBB or #RRGGBBAA format */
+  strokeColor?: string;
+
+  /** Stroke (outline) width in pixels */
+  strokeWidth?: number;
 
   /** Line spacing */
   lineSpacing?: number;
@@ -65,14 +74,17 @@ export interface SrtParseResult {
  * Default options for conversion
  */
 export const DEFAULT_OPTIONS: Required<Srt2FcpxOptions> = {
-  titleName: 'Converted from SRT',
-  formatVersion: '1.8',
+  titleName: "Converted from SRT",
+  formatVersion: "1.8",
   frameRate: 24,
   width: 1920,
   height: 1080,
-  fontFamily: 'Helvetica',
+  fontFamily: "Helvetica",
   fontSize: 72,
-  textColor: '#FFFFFFFF',
-  backgroundColor: '#00000000',
+  fontFace: "Regular",
+  textColor: "#FFFFFFFF",
+  backgroundColor: "#00000000",
+  strokeColor: "#000000FF",
+  strokeWidth: 0,
   lineSpacing: 1.0,
 };

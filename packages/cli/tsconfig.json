@@ -1,13 +1,8 @@
 {
-  "extends": "@srt2fcpx/tsconfig/base.json",
+  "extends": "@srt2fcpx/tsconfig/node.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
-    "baseUrl": "./src",
-    "paths": {
-      "~/*": ["./*"]
-    }
+    "rootDir": "./src"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"]
 }

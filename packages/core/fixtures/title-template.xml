@@ -1,0 +1,15 @@
+                        <title ref="r2" offset="{OFFSET}" name="Basic Title: {DISPLAY_NAME}" start="{START}" duration="{DURATION}">
+                            <param name="Flatten" key="9999/999166631/999166633/2/351" value="1"/>
+                            <param name="Alignment" key="9999/999166631/999166633/2/354/999169573/401" value="1 (Center Horizontally)"/>
+                            <param name="Wrap Mode" key="9999/999166631/999166633/5/999166635/30/34/5" value="1 (Repeat)"/>
+                            <param name="Width" key="9999/999166631/999166633/5/999166635/30/36" value="8"/>
+                            <param name="Wrap Mode" key="9999/999166631/999166633/5/999166635/38/42/5" value="1 (Repeat)"/>
+                            <param name="disableDRT" key="3733" value="1"/>
+                            <text>
+                                <text-style ref="{STYLE_ID}">{TEXT}</text-style>
+                            </text>
+                            <text-style-def id="{STYLE_ID}">
+                                <text-style font="Hiragino Sans" fontSize="100" fontFace="W8" fontColor="1 1 1 1" bold="1" strokeColor="0 0 0 1" strokeWidth="-8" alignment="center"/>
+                            </text-style-def>
+                            <adjust-colorConform enabled="1" autoOrManual="manual" conformType="conformNone" peakNitsOfPQSource="1000" peakNitsOfSDRToPQSource="203"/>
+                        </title>

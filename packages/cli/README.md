@@ -1,99 +1,131 @@
-# srt2fcpx
+# @srt2fcpx/cli
 
-Convert SRT subtitle files to Final Cut Pro FCPXML format.
+Command-line tool for converting SRT subtitles to Final Cut Pro XML format.
 
 ## Installation
 
 ```bash
-npm install srt2fcpx
-# or
-pnpm add srt2fcpx
+# Using pnpm (recommended)
+pnpm add -g @srt2fcpx/cli
+
+# Using npm
+npm install -g @srt2fcpx/cli
+
+# Using yarn
+yarn global add @srt2fcpx/cli
 ```
 
 ## Usage
 
-### CLI
+### Basic Usage
 
 ```bash
-# Basic conversion
-npx srt2fcpx input.srt -o output.fcpxml
-
-# With custom settings
-npx srt2fcpx input.srt -o output.fcpxml \
-  --frame-rate 24 \
-  --font-family "Hiragino Sans W8" \
-  --font-size 100 \
-  --text-color "#FFFFFF"
-
-# Pipe to stdout
-npx srt2fcpx input.srt > output.fcpxml
-
-# Dry run (parse only)
-npx srt2fcpx input.srt --dry-run --verbose
+srt2fcpx input.srt
 ```
 
-### Library
+This will create `input.fcpxml` in the same directory.
 
-```typescript
-import { convertSrtToFcpxml } from 'srt2fcpx';
+### With Custom Options
 
-const srtContent = `1
-00:00:01,000 --> 00:00:03,000
-First subtitle
-
-2
-00:00:04,500 --> 00:00:06,000
-Second subtitle`;
-
-const fcpxml = convertSrtToFcpxml(srtContent, {
-  frameRate: 24,
-  fontFamily: 'Hiragino Sans W8',
-  fontSize: 100,
-  textColor: '#FFFFFF',
-});
-
-console.log(fcpxml);
+```bash
+srt2fcpx input.srt -o output.fcpxml -t "My Project" -f 30
 ```
 
-## API
+### Full Example
 
-### `convertSrtToFcpxml(srtSource: string, options?: Srt2FcpxOptions): string`
+```bash
+srt2fcpx subtitles.srt \
+  --output custom-output.fcpxml \
+  --title "My Video Project" \
+  --fps 30 \
+  --width 3840 \
+  --height 2160 \
+  --font "Arial" \
+  --size 100 \
+  --color "#FFFF00FF" \
+  --bg "#00000080"
+```
 
-Convert SRT content to FCPXML format.
+## Options
 
-**Options:**
+| Option | Alias | Description | Default |
+|--------|-------|-------------|---------|
+| `--output <file>` | `-o` | Output FCPXML file | `<input>.fcpxml` |
+| `--title <name>` | `-t` | Project title | "Converted from SRT" |
+| `--fps <number>` | `-f` | Frame rate | 24 |
+| `--width <number>` | | Video width (pixels) | 1920 |
+| `--height <number>` | | Video height (pixels) | 1080 |
+| `--font <name>` | | Font family | "Helvetica" |
+| `--size <number>` | | Font size | 72 |
+| `--color <hex>` | | Text color (#RRGGBBAA) | "#FFFFFFFF" |
+| `--bg <hex>` | | Background color (#RRGGBBAA) | "#00000000" |
+| `--format-version <version>` | | FCPXML format version | "1.8" |
+| `--version` | `-V` | Show version number | |
+| `--help` | `-h` | Show help | |
 
-- `titleName` - FCPXML project/sequence name
-- `formatVersion` - FCPXML format version (default: "1.8")
-- `frameRate` - Timeline frame rate (default: 24)
-- `width` - Frame width (default: 1920)
-- `height` - Frame height (default: 1080)
-- `fontFamily` - Font family name (default: "Helvetica")
-- `fontSize` - Font size in pixels (default: 72)
-- `textColor` - Text color in #RRGGBB or #RRGGBBAA format
-- `backgroundColor` - Background color
-- `lineSpacing` - Line spacing (default: 1.0)
+## Color Format
 
-### `parseSrt(source: string): SrtParseResult`
+Colors are specified in hexadecimal format:
+- `#RRGGBB` - RGB format (alpha defaults to 1.0)
+- `#RRGGBBAA` - RGBA format (with alpha channel)
 
-Parse SRT content into structured cues.
+Examples:
+- `#FFFFFFFF` - White (opaque)
+- `#000000FF` - Black (opaque)
+- `#FF0000FF` - Red (opaque)
+- `#00000080` - Black (50% transparent)
+- `#FFFF00FF` - Yellow (opaque)
 
-## CLI Options
+## Importing to Final Cut Pro
 
-- `-o, --output <path>` - Output FCPXML file path (default: stdout)
-- `-t, --title-name <name>` - FCPXML project/sequence name
-- `--format-version <version>` - FCPXML format version (default: "1.8")
-- `--frame-rate <fps>` - Timeline frame rate (e.g., 24, 25, 29.97, 30)
-- `--width <px>` - Frame width in pixels (default: 1920)
-- `--height <px>` - Frame height in pixels (default: 1080)
-- `--font-family <name>` - Font family name
-- `--font-size <px>` - Font size in pixels
-- `--text-color <hex>` - Text color (#RRGGBB or #RRGGBBAA)
-- `--bg-color <hex>` - Background color
-- `--line-spacing <value>` - Line spacing
-- `--dry-run` - Parse only, do not generate XML
-- `-v, --verbose` - Verbose output
-- `-q, --quiet` - Suppress non-error output
+1. Run the CLI to generate an FCPXML file
+2. Open Final Cut Pro
+3. Go to **File** → **Import** → **XML...**
+4. Select the generated `.fcpxml` file
+5. Subtitles will appear as title clips in your timeline
+
+## Examples
+
+### Convert with 30fps
+
+```bash
+srt2fcpx video.srt -f 30
+```
+
+### 4K Resolution
+
+```bash
+srt2fcpx video.srt --width 3840 --height 2160
+```
+
+### Custom Font and Size
+
+```bash
+srt2fcpx video.srt --font "Hiragino Sans" --size 80
+```
+
+### Yellow Text with Semi-transparent Background
+
+```bash
+srt2fcpx video.srt --color "#FFFF00FF" --bg "#00000080"
+```
+
+## Troubleshooting
+
+### "No valid SRT cues found in input"
+
+Your SRT file format may be incorrect. Check that:
+- Each subtitle block has a number, timecode, and text
+- Timecodes are in `HH:MM:SS,mmm --> HH:MM:SS,mmm` format
+- Blocks are separated by empty lines
+
+### Module not found
+
+Make sure the package is installed globally:
+
+```bash
+pnpm install -g @srt2fcpx/cli
+```
 
 ## License
 

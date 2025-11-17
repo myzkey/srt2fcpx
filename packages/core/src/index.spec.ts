@@ -23,9 +23,12 @@ Second subtitle`;
       const fcpxml = convertSrtToFcpxml(srt);
 
       expect(fcpxml).toContain('<?xml version="1.0" encoding="UTF-8"?>');
-      expect(fcpxml).toContain('<fcpxml version="1.8">');
+      expect(fcpxml).toContain('<fcpxml version="1.13">'); // Template-based uses FCP's version
       expect(fcpxml).toContain('First subtitle');
       expect(fcpxml).toContain('Second subtitle');
+      // Verify FCP-specific params are preserved from template
+      expect(fcpxml).toContain('<param name="Flatten"');
+      expect(fcpxml).toContain('<adjust-colorConform');
     });
 
     it('should apply custom options', () => {
@@ -34,17 +37,17 @@ Second subtitle`;
 Test subtitle`;
 
       const options: Srt2FcpxOptions = {
-        titleName: 'Custom Title',
         frameRate: 30,
-        fontFamily: 'Arial',
       };
 
       const fcpxml = convertSrtToFcpxml(srt, options);
 
-      expect(fcpxml).toContain('<event name="Custom Title">');
-      expect(fcpxml).toContain('<project name="Custom Title">');
-      expect(fcpxml).toContain('frameDuration="1/30s"');
-      expect(fcpxml).toContain('font="Arial"');
+      // Template-based approach uses fixed template, so only frameRate affects timing
+      expect(fcpxml).toContain('duration="90/30s"'); // 3 seconds at 30fps
+      expect(fcpxml).toContain('Test subtitle');
+      // Template values are preserved (not customizable)
+      expect(fcpxml).toContain('font="Hiragino Sans"');
+      expect(fcpxml).toContain('fontSize="100"');
     });
 
     it('should throw error when no valid cues found', () => {
@@ -253,43 +256,32 @@ Second subtitle
 with multiple lines`;
 
       const options: Srt2FcpxOptions = {
-        titleName: 'Integration Test',
-        formatVersion: '1.9',
         frameRate: 30,
-        width: 3840,
-        height: 2160,
-        fontFamily: 'Arial',
-        fontSize: 80,
-        textColor: '#FF0000FF',
-        backgroundColor: '#00000080',
-        lineSpacing: 1.2,
       };
 
       const fcpxml = convertSrtToFcpxml(srt, options);
 
-      // Check format
-      expect(fcpxml).toContain('<fcpxml version="1.9">');
+      // Template-based approach uses FCP's fixed template
+      expect(fcpxml).toContain('<fcpxml version="1.13">'); // From template
 
-      // Check project name
-      expect(fcpxml).toContain('<event name="Integration Test">');
+      // Check timing with custom frame rate
+      expect(fcpxml).toContain('offset="30/30s"'); // 1 second at 30fps
+      expect(fcpxml).toContain('duration="60/30s"'); // 2 seconds at 30fps
 
-      // Check video format
-      expect(fcpxml).toContain('frameDuration="1/30s"');
-      expect(fcpxml).toContain('width="3840"');
-      expect(fcpxml).toContain('height="2160"');
-
-      // Check font settings
-      expect(fcpxml).toContain('font="Arial"');
-      expect(fcpxml).toContain('fontSize="80"');
-
-      // Check colors (red text, semi-transparent black background)
-      expect(fcpxml).toContain('fontColor="1.000000 0.000000 0.000000 1.000000"');
-      expect(fcpxml).toMatch(/backgroundColor="0\.000000 0\.000000 0\.000000 0\.5/);
+      // Check template values are preserved (white text, black stroke from template)
+      expect(fcpxml).toContain('font="Hiragino Sans"');
+      expect(fcpxml).toContain('fontSize="100"');
+      expect(fcpxml).toContain('fontColor="1 1 1 1"');
+      expect(fcpxml).toContain('strokeColor="0 0 0 1"');
 
       // Check content (HTML stripped)
       expect(fcpxml).toContain('First subtitle');
       expect(fcpxml).toContain('Second subtitle\nwith multiple lines');
       expect(fcpxml).not.toContain('<b>');
+
+      // Verify FCP-specific params from template are preserved
+      expect(fcpxml).toContain('<param name="Flatten"');
+      expect(fcpxml).toContain('<adjust-colorConform');
     });
 
     it('should handle edge case with empty text (recorded as error but still creates cue)', () => {
