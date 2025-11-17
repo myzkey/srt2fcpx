@@ -27,22 +27,98 @@ function escapeXml(text: string): string {
 }
 
 /**
+ * Build XML attributes string from key-value pairs
+ * { font: "Hiragino", fontSize: 80 } -> font="Hiragino" fontSize="80"
+ */
+function buildAttributes(attrs: Record<string, string | number | boolean>): string {
+  return Object.entries(attrs)
+    .map(([key, value]) => `${key}="${String(value)}"`)
+    .join(' ');
+}
+
+/**
+ * Add indentation to each line of a string
+ * @param lines String to indent
+ * @param level Indentation level (each level = 2 spaces)
+ * @returns Indented string
+ */
+function indent(lines: string, level: number): string {
+  const pad = '  '.repeat(level);
+  return lines
+    .trim()
+    .split('\n')
+    .map(line => pad + line)
+    .join('\n');
+}
+
+/**
  * Convert hex color (#RRGGBBAA) to FCPXML color format (r g b a)
  * @param hex Hex color string (#RRGGBB or #RRGGBBAA)
  * @returns FCPXML color string (e.g., "1 1 1 1")
  */
 function hexToFcpxmlColor(hex: string): string {
-  // Remove # prefix
   const clean = hex.replace(/^#/, '');
 
-  // Parse hex values
   const r = parseInt(clean.substring(0, 2), 16) / 255;
   const g = parseInt(clean.substring(2, 4), 16) / 255;
   const b = parseInt(clean.substring(4, 6), 16) / 255;
   const a = clean.length === 8 ? parseInt(clean.substring(6, 8), 16) / 255 : 1;
 
-  // Format as space-separated decimal values
   return `${r.toFixed(6)} ${g.toFixed(6)} ${b.toFixed(6)} ${a.toFixed(6)}`;
+}
+
+/**
+ * 1つの SRT キューを <title> 要素に変換
+ */
+function buildTitleXml(
+  cue: SrtCue,
+  index: number,
+  frameRate: number,
+  opts: Required<Srt2FcpxOptions>,
+  textColor: string,
+  backgroundColor: string
+): string {
+  const offset = millisecondsToFraction(cue.startMs, frameRate);
+  const duration = millisecondsToFraction(cue.endMs - cue.startMs, frameRate);
+
+  // Strip HTML tags from text (v0.1 ignores style tags)
+  const cleanText = stripHtmlTags(cue.text);
+  const text = escapeXml(cleanText);
+
+  // Create abbreviated title for clip name
+  const titlePreview = text.substring(0, 20).replace(/\n/g, ' ');
+  const titleName = text.length > 20 ? `${titlePreview}...` : titlePreview;
+
+  const styleId = `ts${index + 1}`;
+
+  const textStyleAttrs = buildAttributes({
+    font: opts.fontFamily,
+    fontSize: opts.fontSize,
+    fontFace: 'Regular',
+    fontColor: textColor,
+    backgroundColor,
+    alignment: 'center',
+  });
+
+  // Preserve newlines in text content by using placeholder
+  const NEWLINE_PLACEHOLDER = '___NEWLINE___';
+  const textWithPlaceholder = text.replace(/\n/g, NEWLINE_PLACEHOLDER);
+
+  const xml = `
+<title name="Basic Title: ${titleName}" offset="${offset}" ref="r2" duration="${duration}" start="${offset}">
+  <text>
+    <text-style ref="${styleId}">${textWithPlaceholder}</text-style>
+  </text>
+  <text-style-def id="${styleId}">
+    <text-style ${textStyleAttrs}/>
+  </text-style-def>
+</title>`;
+
+  // spine 内でのインデントレベルをここで調整
+  const indented = indent(xml, 6); // "            " (12 spaces) 相当
+
+  // Restore newlines in text content
+  return indented.replace(new RegExp(NEWLINE_PLACEHOLDER, 'g'), '\n');
 }
 
 /**
@@ -52,74 +128,53 @@ function hexToFcpxmlColor(hex: string): string {
  * @returns FCPXML string
  */
 export function buildFcpxml(cues: SrtCue[], options?: Srt2FcpxOptions): string {
-  // Merge options with defaults
   const opts: Required<Srt2FcpxOptions> = {
     ...DEFAULT_OPTIONS,
     ...options,
   };
 
-  const frameRate = opts.frameRate;
+  const {
+    frameRate,
+    width,
+    height,
+    titleName,
+    textColor: textColorHex,
+    backgroundColor: backgroundHex,
+    formatVersion,
+  } = opts;
 
-  // Calculate total duration
   const maxEndMs = cues.length > 0 ? Math.max(...cues.map(c => c.endMs)) : 0;
   const totalDuration = millisecondsToFraction(maxEndMs, frameRate);
 
-  // Convert colors
-  const textColor = hexToFcpxmlColor(opts.textColor);
-  const backgroundColor = hexToFcpxmlColor(opts.backgroundColor);
+  const textColor = hexToFcpxmlColor(textColorHex);
+  const backgroundColor = hexToFcpxmlColor(backgroundHex);
 
-  // Build FCPXML header
-  let xml = `<?xml version="1.0" encoding="UTF-8"?>
+  const escapedTitle = escapeXml(titleName);
+
+  const titlesXml = cues
+    .map((cue, index) =>
+      buildTitleXml(cue, index, frameRate, opts, textColor, backgroundColor)
+    )
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE fcpxml>
-<fcpxml version="${opts.formatVersion}">
+<fcpxml version="${formatVersion}">
   <resources>
-    <format id="r1" name="FFVideoFormat${opts.height}p${frameRate}" frameDuration="1/${frameRate}s" width="${opts.width}" height="${opts.height}"/>
+    <format id="r1" name="FFVideoFormat${height}p${frameRate}" frameDuration="1/${frameRate}s" width="${width}" height="${height}"/>
     <effect id="r2" name="Basic Title" uid=".../Titles.localized/Bumper:Opener.localized/Basic Title.localized/Basic Title.moti"/>
   </resources>
 
   <library>
-    <event name="${escapeXml(opts.titleName)}">
-      <project name="${escapeXml(opts.titleName)}">
+    <event name="${escapedTitle}">
+      <project name="${escapedTitle}">
         <sequence format="r1" duration="${totalDuration}" tcStart="0s" tcFormat="NDF">
           <spine>
-`;
-
-  // Add title clips for each cue
-  cues.forEach((cue, index) => {
-    const offset = millisecondsToFraction(cue.startMs, frameRate);
-    const duration = millisecondsToFraction(cue.endMs - cue.startMs, frameRate);
-
-    // Strip HTML tags from text (v0.1 ignores style tags)
-    const cleanText = stripHtmlTags(cue.text);
-    const text = escapeXml(cleanText);
-
-    // Create abbreviated title for clip name
-    const titlePreview = text.substring(0, 20).replace(/\n/g, ' ');
-    const titleName = text.length > 20 ? `${titlePreview}...` : titlePreview;
-
-    const styleId = `ts${index + 1}`;
-
-    // Build text-style attributes
-    const textStyleAttrs = `font="${opts.fontFamily}" fontSize="${opts.fontSize}" fontFace="Regular" fontColor="${textColor}" backgroundColor="${backgroundColor}" alignment="center"`;
-
-    xml += `            <title name="Basic Title: ${titleName}" offset="${offset}" ref="r2" duration="${duration}" start="${offset}">
-              <text>
-                <text-style ref="${styleId}">${text}</text-style>
-              </text>
-              <text-style-def id="${styleId}">
-                <text-style ${textStyleAttrs}/>
-              </text-style-def>
-            </title>
-`;
-  });
-
-  // Close FCPXML
-  xml += `          </spine>
+${titlesXml}
+          </spine>
         </sequence>
       </project>
     </event>
   </library>
 </fcpxml>`;
-
-  return xml;
 }
