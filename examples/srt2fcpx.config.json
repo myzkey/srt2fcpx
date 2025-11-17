@@ -1,0 +1,14 @@
+{
+  "title": "My Video Project",
+  "fps": 30,
+  "width": 1920,
+  "height": 1080,
+  "font": "Hiragino Sans",
+  "size": 100,
+  "face": "W8",
+  "color": "#FFFFFFFF",
+  "bg": "#00000000",
+  "strokeColor": "#000000FF",
+  "strokeWidth": -8,
+  "formatVersion": "1.13"
+}

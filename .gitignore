@@ -33,3 +33,7 @@ pnpm-debug.log*
 
 # ESLint
 .eslintcache
+
+# Config files (except examples)
+/.srt2fcpxrc.json
+/srt2fcpx.config.json
