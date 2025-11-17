@@ -1,6 +1,6 @@
 {
   "name": "srt2fcpx",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Convert SRT subtitle files to Final Cut Pro FCPXML format",
   "type": "module",
   "bin": {
