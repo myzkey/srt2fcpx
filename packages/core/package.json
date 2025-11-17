@@ -30,6 +30,7 @@
     "@srt2fcpx/eslint-config": "workspace:*",
     "@srt2fcpx/tsconfig": "workspace:*",
     "@types/node": "^24.10.1",
+    "esbuild": "^0.24.2",
     "eslint": "9.39.1",
     "tsc-alias": "^1.8.10",
     "typescript": "^5.9.3",

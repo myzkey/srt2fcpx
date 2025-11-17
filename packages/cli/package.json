@@ -20,6 +20,7 @@
     "chalk": "^5.3.0"
   },
   "devDependencies": {
+    "@srt2fcpx/tsconfig": "workspace:*",
     "@types/node": "^22.10.2",
     "esbuild": "^0.24.2",
     "tsx": "^4.19.2",
