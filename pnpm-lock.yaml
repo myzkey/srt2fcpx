@@ -30,6 +30,9 @@ importers:
         specifier: ^12.1.0
         version: 12.1.0
     devDependencies:
+      '@srt2fcpx/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
       '@srt2fcpx/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
@@ -39,6 +42,9 @@ importers:
       esbuild:
         specifier: ^0.24.2
         version: 0.24.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.39.1
       tsx:
         specifier: ^4.19.2
         version: 4.20.6

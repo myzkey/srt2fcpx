@@ -2,9 +2,9 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve, basename, join } from 'node:path';
 import { homedir } from 'node:os';
 import { program } from 'commander';
-import chalk from 'chalk';
 import { convertSrtToFcpxml } from '@srt2fcpx/core';
 import type { Srt2FcpxOptions } from '@srt2fcpx/core';
+import { logger, setQuiet } from './logger.js';
 
 const packageJson = JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
@@ -44,11 +44,11 @@ function loadConfigFile(): ConfigFile | null {
       try {
         const configContent = readFileSync(configPath, 'utf-8');
         const config = JSON.parse(configContent) as ConfigFile;
-        console.log(chalk.gray('⚙️  Config loaded from:'), configPath);
+        logger.debug('⚙️  Config loaded from:', configPath);
         return config;
       } catch (error) {
-        console.warn(chalk.yellow('⚠️  Warning: Failed to parse config file:'), configPath);
-        console.warn(chalk.yellow('   Error:'), error instanceof Error ? error.message : String(error));
+        logger.warn('⚠️  Warning: Failed to parse config file:', configPath);
+        logger.warn('   Error:', error instanceof Error ? error.message : String(error));
       }
     }
   }
@@ -75,9 +75,14 @@ program
   .option('--stroke-width <number>', 'Stroke/outline width', (val) => parseInt(val, 10), 0)
   .option('--format-version <version>', 'FCPXML format version', '1.8')
   .option('--config <file>', 'Path to config file (overrides auto-discovery)')
+  .option('-q, --quiet', 'Suppress all output except errors')
   .action((input, options) => {
+    // Set quiet mode before any logging
+    if (options.quiet) {
+      setQuiet(true);
+    }
     try {
-      console.log(chalk.blue('📖 Reading:'), input);
+      logger.info('📖 Reading:', input);
 
       // Load config file
       let config: ConfigFile | null = null;
@@ -88,13 +93,13 @@ program
           try {
             const configContent = readFileSync(configPath, 'utf-8');
             config = JSON.parse(configContent) as ConfigFile;
-            console.log(chalk.gray('⚙️  Config loaded from:'), configPath);
+            logger.debug('⚙️  Config loaded from:', configPath);
           } catch (error) {
-            console.warn(chalk.yellow('⚠️  Warning: Failed to parse config file:'), configPath);
-            console.warn(chalk.yellow('   Error:'), error instanceof Error ? error.message : String(error));
+            logger.warn('⚠️  Warning: Failed to parse config file:', configPath);
+            logger.warn('   Error:', error instanceof Error ? error.message : String(error));
           }
         } else {
-          console.warn(chalk.yellow('⚠️  Warning: Config file not found:'), configPath);
+          logger.warn('⚠️  Warning: Config file not found:', configPath);
         }
       } else {
         // Auto-discover config file
@@ -177,8 +182,8 @@ program
       // Write output
       writeFileSync(resolve(outputFile), fcpxml, 'utf-8');
 
-      console.log(chalk.green('✅ Converted successfully!'));
-      console.log(chalk.blue('📝 Output:'), outputFile);
+      logger.success('✅ Converted successfully!');
+      logger.info('📝 Output:', outputFile);
 
       // Show applied options if different from defaults
       const shownOptions: string[] = [];
@@ -197,11 +202,11 @@ program
       if (mergedOptions.formatVersion !== '1.8') shownOptions.push(`format: ${mergedOptions.formatVersion}`);
 
       if (shownOptions.length > 0) {
-        console.log(chalk.gray('⚙️  Applied options:'), shownOptions.join(', '));
+        logger.debug('⚙️  Applied options:', shownOptions.join(', '));
       }
 
     } catch (error) {
-      console.error(chalk.red('❌ Error:'), error instanceof Error ? error.message : String(error));
+      logger.error('❌ Error:', error instanceof Error ? error.message : String(error));
       process.exit(1);
     }
   });
