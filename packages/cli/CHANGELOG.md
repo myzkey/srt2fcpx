@@ -1,5 +1,11 @@
 # srt2fcpx
 
+## 0.0.2
+
+### Patch Changes
+
+- Add --quiet/-q option to suppress all output except errors
+
 ## 0.0.1
 
 ### Patch Changes
