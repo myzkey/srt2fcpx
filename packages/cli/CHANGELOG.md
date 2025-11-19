@@ -1,5 +1,11 @@
 # srt2fcpx
 
+## 0.0.5
+
+### Patch Changes
+
+- 327bad1: Fix standalone package by bundling @srt2fcpx/core with required fixtures templates
+
 ## 0.0.4
 
 ### Patch Changes
