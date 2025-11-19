@@ -29,8 +29,9 @@
     "url": "https://github.com/myzkey/srt2fcpx/issues"
   },
   "scripts": {
-    "build": "pnpm run clean && node esbuild.config.js && pnpm run build:types",
+    "build": "pnpm run clean && node esbuild.config.js && pnpm run build:types && pnpm run copy-fixtures",
     "build:types": "dts-bundle-generator -o dist/index.d.ts src/index.ts --project tsconfig.json --external-types",
+    "copy-fixtures": "mkdir -p dist/fixtures && cp -r ../core/fixtures/* dist/fixtures/",
     "clean": "rm -rf dist",
     "dev": "tsx src/cli.ts",
     "lint": "eslint ."
