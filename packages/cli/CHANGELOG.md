@@ -1,5 +1,11 @@
 # srt2fcpx
 
+## 0.0.4
+
+### Patch Changes
+
+- 539c5f2: Fix package to work as standalone by properly bundling @srt2fcpx/core into both CLI and library entry points
+
 ## 0.0.3
 
 ### Patch Changes
