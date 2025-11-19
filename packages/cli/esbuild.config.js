@@ -4,21 +4,32 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-await esbuild.build({
-  entryPoints: ['src/cli.ts'],
+const commonConfig = {
   bundle: true,
   platform: 'node',
   target: 'node18',
   format: 'esm',
-  outfile: 'dist/cli.js',
-  banner: {
-    js: '#!/usr/bin/env node',
-  },
-  // Bundle @srt2fcpx/core but keep other packages external
   external: ['commander', 'chalk'],
   alias: {
     '@srt2fcpx/core': path.resolve(__dirname, '../core/src/index.ts'),
   },
+};
+
+// Build CLI
+await esbuild.build({
+  ...commonConfig,
+  entryPoints: ['src/cli.ts'],
+  outfile: 'dist/cli.js',
+  banner: {
+    js: '#!/usr/bin/env node',
+  },
+});
+
+// Build library entry point
+await esbuild.build({
+  ...commonConfig,
+  entryPoints: ['src/index.ts'],
+  outfile: 'dist/index.js',
 });
 
 console.log('✓ CLI package bundled successfully');

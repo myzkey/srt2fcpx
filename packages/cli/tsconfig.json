@@ -2,7 +2,11 @@
   "extends": "@srt2fcpx/tsconfig/node.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "types": ["node"],
+    "paths": {
+      "@srt2fcpx/core": ["../core/src/index.ts"],
+      "~/*": ["../core/src/*"]
+    }
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "../core/src/**/*"]
 }
