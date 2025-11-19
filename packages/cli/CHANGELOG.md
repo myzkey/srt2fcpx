@@ -1,5 +1,11 @@
 # srt2fcpx
 
+## 0.0.3
+
+### Patch Changes
+
+- bceb131: Bundle @srt2fcpx/core into CLI package to fix npm install errors for external users
+
 ## 0.0.2
 
 ### Patch Changes
