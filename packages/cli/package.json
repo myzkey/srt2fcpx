@@ -3,6 +3,14 @@
   "version": "0.0.3",
   "description": "Convert SRT subtitle files to Final Cut Pro FCPXML format",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "bin": {
     "srt2fcpx": "./dist/cli.js"
   },
@@ -21,19 +29,21 @@
     "url": "https://github.com/myzkey/srt2fcpx/issues"
   },
   "scripts": {
-    "build": "node esbuild.config.js",
+    "build": "pnpm run clean && node esbuild.config.js && pnpm run build:types",
+    "build:types": "dts-bundle-generator -o dist/index.d.ts src/index.ts --project tsconfig.json --external-types",
     "clean": "rm -rf dist",
     "dev": "tsx src/cli.ts",
     "lint": "eslint ."
   },
   "dependencies": {
-    "commander": "^12.1.0",
-    "chalk": "^5.3.0"
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0"
   },
   "devDependencies": {
     "@srt2fcpx/eslint-config": "workspace:*",
     "@srt2fcpx/tsconfig": "workspace:*",
     "@types/node": "^22.10.2",
+    "dts-bundle-generator": "^9.5.1",
     "esbuild": "^0.24.2",
     "eslint": "^9.17.0",
     "tsx": "^4.19.2",
