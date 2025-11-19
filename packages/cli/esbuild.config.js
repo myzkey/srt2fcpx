@@ -10,7 +10,8 @@ await esbuild.build({
   banner: {
     js: '#!/usr/bin/env node',
   },
-  packages: 'external',
+  // Bundle @srt2fcpx/core but keep other packages external
+  external: ['commander', 'chalk'],
 });
 
 console.log('✓ CLI package bundled successfully');
