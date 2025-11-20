@@ -10,7 +10,9 @@
     "test:watch": "pnpm --filter @srt2fcpx/core test:watch",
     "clean": "pnpm --parallel --filter '@srt2fcpx/*' clean && pnpm --filter srt2fcpx clean",
     "typecheck": "pnpm --filter @srt2fcpx/core typecheck",
-    "lint": "pnpm -r lint",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
     "srt2fcpx": "node packages/cli/dist/cli.js",
     "changeset": "changeset",
     "version": "changeset version",
@@ -31,6 +33,7 @@
   },
   "packageManager": "pnpm@8.15.0",
   "devDependencies": {
+    "@biomejs/biome": "^2.3.6",
     "@changesets/cli": "^2.27.1"
   }
 }

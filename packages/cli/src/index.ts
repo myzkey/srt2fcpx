@@ -8,4 +8,4 @@
  */
 
 // Re-export everything from core
-export * from '@srt2fcpx/core';
+export * from '@srt2fcpx/core'

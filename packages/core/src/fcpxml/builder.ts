@@ -1,8 +1,8 @@
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { stripHtmlTags } from "~/srt/parser";
-import { DEFAULT_OPTIONS, Srt2FcpxOptions, SrtCue } from "~/types";
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { stripHtmlTags } from '~/srt/parser'
+import { DEFAULT_OPTIONS, type Srt2FcpxOptions, type SrtCue } from '~/types'
 
 /**
  * Convert milliseconds to FCPXML fraction format with frame alignment
@@ -11,10 +11,10 @@ import { DEFAULT_OPTIONS, Srt2FcpxOptions, SrtCue } from "~/types";
  * @returns FCPXML timecode (e.g., "72/24s")
  */
 function millisecondsToFraction(ms: number, frameRate: number): string {
-  const seconds = ms / 1000;
+  const seconds = ms / 1000
   // Round to frame boundary
-  const frames = Math.floor(seconds * frameRate);
-  return `${frames}/${frameRate}s`;
+  const frames = Math.floor(seconds * frameRate)
+  return `${frames}/${frameRate}s`
 }
 
 /**
@@ -22,11 +22,11 @@ function millisecondsToFraction(ms: number, frameRate: number): string {
  */
 function escapeXml(text: string): string {
   return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
 }
 
 /**
@@ -34,11 +34,11 @@ function escapeXml(text: string): string {
  * { font: "Hiragino", fontSize: 80 } -> font="Hiragino" fontSize="80"
  */
 function buildAttributes(
-  attrs: Record<string, string | number | boolean>
+  attrs: Record<string, string | number | boolean>,
 ): string {
   return Object.entries(attrs)
     .map(([key, value]) => `${key}="${String(value)}"`)
-    .join(" ");
+    .join(' ')
 }
 
 /**
@@ -48,12 +48,12 @@ function buildAttributes(
  * @returns Indented string
  */
 function indent(lines: string, level: number): string {
-  const pad = "  ".repeat(level);
+  const pad = '  '.repeat(level)
   return lines
     .trim()
-    .split("\n")
+    .split('\n')
     .map((line) => pad + line)
-    .join("\n");
+    .join('\n')
 }
 
 /**
@@ -62,23 +62,23 @@ function indent(lines: string, level: number): string {
  * @returns FCPXML color string (e.g., "1 1 1 1")
  */
 function hexToFcpxmlColor(hex: string): string {
-  const clean = hex.replace(/^#/, "");
+  const clean = hex.replace(/^#/, '')
 
-  const r = parseInt(clean.substring(0, 2), 16) / 255;
-  const g = parseInt(clean.substring(2, 4), 16) / 255;
-  const b = parseInt(clean.substring(4, 6), 16) / 255;
-  const a = clean.length === 8 ? parseInt(clean.substring(6, 8), 16) / 255 : 1;
+  const r = parseInt(clean.substring(0, 2), 16) / 255
+  const g = parseInt(clean.substring(2, 4), 16) / 255
+  const b = parseInt(clean.substring(4, 6), 16) / 255
+  const a = clean.length === 8 ? parseInt(clean.substring(6, 8), 16) / 255 : 1
 
   // Format: use integers for 0 and 1, decimals for fractional values (match FCP export format)
   const formatValue = (v: number) => {
-    if (v === 0) return "0";
-    if (v === 1) return "1";
-    return v.toString();
-  };
+    if (v === 0) return '0'
+    if (v === 1) return '1'
+    return v.toString()
+  }
 
   return `${formatValue(r)} ${formatValue(g)} ${formatValue(b)} ${formatValue(
-    a
-  )}`;
+    a,
+  )}`
 }
 
 /**
@@ -86,25 +86,25 @@ function hexToFcpxmlColor(hex: string): string {
  */
 function getFixturesPath(): string {
   // Get the directory of the current module
-  const currentDir = dirname(fileURLToPath(import.meta.url));
+  const currentDir = dirname(fileURLToPath(import.meta.url))
   // Fixtures are at ../fixtures relative to this file (fcpxml/builder.ts or fcpxml/builder.js)
-  return join(currentDir, "..", "fixtures");
+  return join(currentDir, '..', 'fixtures')
 }
 
 /**
  * Load template files
  */
 function loadTemplates(): { baseTemplate: string; titleTemplate: string } {
-  const fixturesPath = getFixturesPath();
+  const fixturesPath = getFixturesPath()
   const baseTemplate = readFileSync(
-    join(fixturesPath, "base-template.fcpxml"),
-    "utf-8"
-  );
+    join(fixturesPath, 'base-template.fcpxml'),
+    'utf-8',
+  )
   const titleTemplate = readFileSync(
-    join(fixturesPath, "title-template.xml"),
-    "utf-8"
-  );
-  return { baseTemplate, titleTemplate };
+    join(fixturesPath, 'title-template.xml'),
+    'utf-8',
+  )
+  return { baseTemplate, titleTemplate }
 }
 
 /**
@@ -114,21 +114,21 @@ function buildTitleFromTemplate(
   cue: SrtCue,
   index: number,
   frameRate: number,
-  titleTemplate: string
+  titleTemplate: string,
 ): string {
-  const offset = millisecondsToFraction(cue.startMs, frameRate);
-  const start = offset; // In this template, start and offset are the same
-  const duration = millisecondsToFraction(cue.endMs - cue.startMs, frameRate);
+  const offset = millisecondsToFraction(cue.startMs, frameRate)
+  const start = offset // In this template, start and offset are the same
+  const duration = millisecondsToFraction(cue.endMs - cue.startMs, frameRate)
 
   // Strip HTML tags and escape XML
-  const cleanText = stripHtmlTags(cue.text);
-  const text = escapeXml(cleanText);
+  const cleanText = stripHtmlTags(cue.text)
+  const text = escapeXml(cleanText)
 
   // Create abbreviated display name for clip
-  const titlePreview = text.substring(0, 20).replace(/\n/g, " ");
-  const displayName = text.length > 20 ? `${titlePreview}...` : titlePreview;
+  const titlePreview = text.substring(0, 20).replace(/\n/g, ' ')
+  const displayName = text.length > 20 ? `${titlePreview}...` : titlePreview
 
-  const styleId = `ts${index + 1}`;
+  const styleId = `ts${index + 1}`
 
   // Replace placeholders in template
   return titleTemplate
@@ -137,7 +137,7 @@ function buildTitleFromTemplate(
     .replace(/{DURATION}/g, duration)
     .replace(/{DISPLAY_NAME}/g, displayName)
     .replace(/{STYLE_ID}/g, styleId)
-    .replace(/{TEXT}/g, text);
+    .replace(/{TEXT}/g, text)
 }
 
 /**
@@ -150,20 +150,20 @@ function buildTitleXml(
   opts: Required<Srt2FcpxOptions>,
   textColor: string,
   backgroundColor: string,
-  strokeColor: string
+  strokeColor: string,
 ): string {
-  const offset = millisecondsToFraction(cue.startMs, frameRate);
-  const duration = millisecondsToFraction(cue.endMs - cue.startMs, frameRate);
+  const offset = millisecondsToFraction(cue.startMs, frameRate)
+  const duration = millisecondsToFraction(cue.endMs - cue.startMs, frameRate)
 
   // Strip HTML tags from text (v0.1 ignores style tags)
-  const cleanText = stripHtmlTags(cue.text);
-  const text = escapeXml(cleanText);
+  const cleanText = stripHtmlTags(cue.text)
+  const text = escapeXml(cleanText)
 
   // Create abbreviated title for clip name
-  const titlePreview = text.substring(0, 20).replace(/\n/g, " ");
-  const titleName = text.length > 20 ? `${titlePreview}...` : titlePreview;
+  const titlePreview = text.substring(0, 20).replace(/\n/g, ' ')
+  const titleName = text.length > 20 ? `${titlePreview}...` : titlePreview
 
-  const styleId = `ts${index + 1}`;
+  const styleId = `ts${index + 1}`
 
   const attrs: Record<string, string | number> = {
     font: opts.fontFamily,
@@ -171,20 +171,20 @@ function buildTitleXml(
     fontFace: opts.fontFace,
     fontColor: textColor,
     backgroundColor,
-    alignment: "center",
-  };
+    alignment: 'center',
+  }
 
   // Add stroke attributes if strokeWidth is not 0 (can be positive or negative)
   if (opts.strokeWidth !== 0) {
-    attrs.strokeColor = strokeColor;
-    attrs.strokeWidth = opts.strokeWidth;
+    attrs.strokeColor = strokeColor
+    attrs.strokeWidth = opts.strokeWidth
   }
 
-  const textStyleAttrs = buildAttributes(attrs);
+  const textStyleAttrs = buildAttributes(attrs)
 
   // Preserve newlines in text content by using placeholder
-  const NEWLINE_PLACEHOLDER = "___NEWLINE___";
-  const textWithPlaceholder = text.replace(/\n/g, NEWLINE_PLACEHOLDER);
+  const NEWLINE_PLACEHOLDER = '___NEWLINE___'
+  const textWithPlaceholder = text.replace(/\n/g, NEWLINE_PLACEHOLDER)
 
   const xml = `
 <title name="Basic Title: ${titleName}" offset="${offset}" ref="r2" duration="${duration}" start="${offset}">
@@ -194,13 +194,13 @@ function buildTitleXml(
   <text-style-def id="${styleId}">
     <text-style ${textStyleAttrs}/>
   </text-style-def>
-</title>`;
+</title>`
 
   // Adjust indentation level for spine content
-  const indented = indent(xml, 6); // Equivalent to 12 spaces
+  const indented = indent(xml, 6) // Equivalent to 12 spaces
 
   // Restore newlines in text content
-  return indented.replace(new RegExp(NEWLINE_PLACEHOLDER, "g"), "\n");
+  return indented.replace(new RegExp(NEWLINE_PLACEHOLDER, 'g'), '\n')
 }
 
 /**
@@ -213,7 +213,7 @@ export function buildFcpxml(cues: SrtCue[], options?: Srt2FcpxOptions): string {
   const opts: Required<Srt2FcpxOptions> = {
     ...DEFAULT_OPTIONS,
     ...options,
-  };
+  }
 
   const {
     frameRate,
@@ -224,16 +224,16 @@ export function buildFcpxml(cues: SrtCue[], options?: Srt2FcpxOptions): string {
     backgroundColor: backgroundHex,
     strokeColor: strokeColorHex,
     formatVersion,
-  } = opts;
+  } = opts
 
-  const maxEndMs = cues.length > 0 ? Math.max(...cues.map((c) => c.endMs)) : 0;
-  const totalDuration = millisecondsToFraction(maxEndMs, frameRate);
+  const maxEndMs = cues.length > 0 ? Math.max(...cues.map((c) => c.endMs)) : 0
+  const totalDuration = millisecondsToFraction(maxEndMs, frameRate)
 
-  const textColor = hexToFcpxmlColor(textColorHex);
-  const backgroundColor = hexToFcpxmlColor(backgroundHex);
-  const strokeColor = hexToFcpxmlColor(strokeColorHex);
+  const textColor = hexToFcpxmlColor(textColorHex)
+  const backgroundColor = hexToFcpxmlColor(backgroundHex)
+  const strokeColor = hexToFcpxmlColor(strokeColorHex)
 
-  const escapedTitle = escapeXml(titleName);
+  const escapedTitle = escapeXml(titleName)
 
   const titlesXml = cues
     .map((cue, index) =>
@@ -244,10 +244,10 @@ export function buildFcpxml(cues: SrtCue[], options?: Srt2FcpxOptions): string {
         opts,
         textColor,
         backgroundColor,
-        strokeColor
-      )
+        strokeColor,
+      ),
     )
-    .join("\n");
+    .join('\n')
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE fcpxml>
@@ -268,7 +268,7 @@ ${titlesXml}
       </project>
     </event>
   </library>
-</fcpxml>`;
+</fcpxml>`
 }
 
 /**
@@ -280,31 +280,31 @@ ${titlesXml}
  */
 export function buildFcpxmlFromTemplate(
   cues: SrtCue[],
-  options?: Srt2FcpxOptions
+  options?: Srt2FcpxOptions,
 ): string {
   const opts: Required<Srt2FcpxOptions> = {
     ...DEFAULT_OPTIONS,
     ...options,
-  };
+  }
 
-  const { frameRate } = opts;
+  const { frameRate } = opts
 
   // Load templates
-  const { baseTemplate, titleTemplate } = loadTemplates();
+  const { baseTemplate, titleTemplate } = loadTemplates()
 
   // Calculate total sequence duration
-  const maxEndMs = cues.length > 0 ? Math.max(...cues.map((c) => c.endMs)) : 0;
-  const totalDuration = millisecondsToFraction(maxEndMs, frameRate);
+  const maxEndMs = cues.length > 0 ? Math.max(...cues.map((c) => c.endMs)) : 0
+  const totalDuration = millisecondsToFraction(maxEndMs, frameRate)
 
   // Build all title elements from template
   const titlesXml = cues
     .map((cue, index) =>
-      buildTitleFromTemplate(cue, index, frameRate, titleTemplate)
+      buildTitleFromTemplate(cue, index, frameRate, titleTemplate),
     )
-    .join("\n");
+    .join('\n')
 
   // Replace placeholders in base template
   return baseTemplate
     .replace(/{SEQUENCE_DURATION}/g, totalDuration)
-    .replace(/{TITLES}/g, titlesXml);
+    .replace(/{TITLES}/g, titlesXml)
 }

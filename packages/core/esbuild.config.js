@@ -1,32 +1,32 @@
-import * as esbuild from 'esbuild';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { existsSync } from 'node:fs';
+import { existsSync } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import * as esbuild from 'esbuild'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // Alias plugin for TypeScript paths
 const aliasPlugin = {
   name: 'alias',
   setup(build) {
     // ~/* -> src/*
-    build.onResolve({ filter: /^~\// }, args => {
-      const relativePath = args.path.slice(2); // Remove ~/
-      const resolved = path.resolve(__dirname, 'src', relativePath);
+    build.onResolve({ filter: /^~\// }, (args) => {
+      const relativePath = args.path.slice(2) // Remove ~/
+      const resolved = path.resolve(__dirname, 'src', relativePath)
 
       // Try with .ts extension if file doesn't exist
-      const extensions = ['.ts', '.tsx', '.js', '.jsx', ''];
+      const extensions = ['.ts', '.tsx', '.js', '.jsx', '']
       for (const ext of extensions) {
-        const pathWithExt = resolved + ext;
+        const pathWithExt = resolved + ext
         if (existsSync(pathWithExt)) {
-          return { path: pathWithExt };
+          return { path: pathWithExt }
         }
       }
 
-      return { path: resolved };
-    });
+      return { path: resolved }
+    })
   },
-};
+}
 
 await esbuild.build({
   entryPoints: ['src/index.ts'],
@@ -38,6 +38,6 @@ await esbuild.build({
   sourcemap: true,
   plugins: [aliasPlugin],
   external: [], // No external dependencies for core
-});
+})
 
-console.log('✓ Core package bundled successfully');
+console.log('✓ Core package bundled successfully')
