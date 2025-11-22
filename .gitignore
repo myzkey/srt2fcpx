@@ -6,6 +6,9 @@ node_modules/
 dist/
 *.d.ts.map
 
+# Turbo
+.turbo/
+
 # Testing
 coverage/
 
