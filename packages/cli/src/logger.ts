@@ -1,3 +1,5 @@
+import chalk from 'chalk'
+
 let quietMode = false
 
 export function setQuiet(quiet: boolean): void {
@@ -9,25 +11,32 @@ export function isQuiet(): boolean {
 }
 
 export const logger = {
-  info: (_message: string, ..._args: unknown[]): void => {
+  info: (message: string, ...args: unknown[]): void => {
     if (!quietMode) {
+      console.log(chalk.blue(message), ...args)
     }
   },
 
-  success: (_message: string, ..._args: unknown[]): void => {
+  success: (message: string, ...args: unknown[]): void => {
     if (!quietMode) {
+      console.log(chalk.green(message), ...args)
     }
   },
 
-  warn: (_message: string, ..._args: unknown[]): void => {
+  warn: (message: string, ...args: unknown[]): void => {
     if (!quietMode) {
+      console.warn(chalk.yellow(message), ...args)
     }
   },
 
-  error: (_message: string, ..._args: unknown[]): void => {},
+  error: (message: string, ...args: unknown[]): void => {
+    // Error messages should always be shown, even in quiet mode
+    console.error(chalk.red(message), ...args)
+  },
 
-  debug: (_message: string, ..._args: unknown[]): void => {
+  debug: (message: string, ...args: unknown[]): void => {
     if (!quietMode) {
+      console.log(chalk.gray(message), ...args)
     }
   },
 }
