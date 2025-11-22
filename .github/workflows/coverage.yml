@@ -4,6 +4,11 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   coverage:
     runs-on: ubuntu-latest
@@ -38,16 +43,13 @@ jobs:
       - name: Run tests with coverage
         run: pnpm test:coverage
 
-      - name: Coverage Comment
-        uses: romeovs/lcov-reporter-action@v0.4.0
+      - name: Vitest Coverage Report
+        uses: davelosert/vitest-coverage-report-action@v2
+        if: always()
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          lcov-file: ./packages/core/coverage/lcov.info
-          delete-old-comments: true
-
-      - name: Coverage Comment CLI
-        uses: romeovs/lcov-reporter-action@v0.4.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          lcov-file: ./packages/cli/coverage/lcov.info
-          delete-old-comments: false
+          json-summary-compare-path: |
+            packages/core/coverage/coverage-summary.json
+            packages/cli/coverage/coverage-summary.json
+          json-final-path: |
+            packages/core/coverage/coverage-final.json
+            packages/cli/coverage/coverage-final.json
