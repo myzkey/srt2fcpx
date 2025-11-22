@@ -8,6 +8,7 @@
     "build": "turbo build",
     "test": "turbo test",
     "test:watch": "turbo test:watch",
+    "test:coverage": "turbo test:coverage",
     "clean": "turbo clean",
     "typecheck": "turbo typecheck",
     "lint": "turbo lint",
