@@ -43,13 +43,56 @@ jobs:
       - name: Run tests with coverage
         run: pnpm test:coverage
 
-      - name: Vitest Coverage Report
-        uses: davelosert/vitest-coverage-report-action@v2
+      - name: Generate Coverage Report
+        id: coverage
+        run: |
+          cat > coverage_report.md << 'EOF'
+          ## 📊 Code Coverage Report
+
+          EOF
+
+          if [ -f "packages/core/coverage/coverage-summary.json" ]; then
+            echo "### @srt2fcpx/core Package" >> coverage_report.md
+            echo "" >> coverage_report.md
+            node -e "
+              const coverage = require('./packages/core/coverage/coverage-summary.json');
+              const { lines, functions, branches, statements } = coverage.total;
+              console.log('| Metric | Coverage |');
+              console.log('|--------|----------|');
+              console.log('| **Lines** | **' + lines.pct + '%** (' + lines.covered + '/' + lines.total + ') |');
+              console.log('| **Functions** | **' + functions.pct + '%** (' + functions.covered + '/' + functions.total + ') |');
+              console.log('| **Branches** | **' + branches.pct + '%** (' + branches.covered + '/' + branches.total + ') |');
+              console.log('| **Statements** | **' + statements.pct + '%** (' + statements.covered + '/' + statements.total + ') |');
+              console.log('');
+            " >> coverage_report.md
+          else
+            echo "❌ Core coverage not available" >> coverage_report.md
+          fi
+
+          if [ -f "packages/cli/coverage/coverage-summary.json" ]; then
+            echo "### srt2fcpx (CLI) Package" >> coverage_report.md
+            echo "" >> coverage_report.md
+            node -e "
+              const coverage = require('./packages/cli/coverage/coverage-summary.json');
+              const { lines, functions, branches, statements } = coverage.total;
+              console.log('| Metric | Coverage |');
+              console.log('|--------|----------|');
+              console.log('| **Lines** | **' + lines.pct + '%** (' + lines.covered + '/' + lines.total + ') |');
+              console.log('| **Functions** | **' + functions.pct + '%** (' + functions.covered + '/' + functions.total + ') |');
+              console.log('| **Branches** | **' + branches.pct + '%** (' + branches.covered + '/' + branches.total + ') |');
+              console.log('| **Statements** | **' + statements.pct + '%** (' + statements.covered + '/' + statements.total + ') |');
+              console.log('');
+            " >> coverage_report.md
+          else
+            echo "❌ CLI coverage not available" >> coverage_report.md
+          fi
+
+          echo "---" >> coverage_report.md
+          echo "*Coverage reports updated automatically by GitHub Actions*" >> coverage_report.md
+
+      - name: Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
         if: always()
         with:
-          json-summary-compare-path: |
-            packages/core/coverage/coverage-summary.json
-            packages/cli/coverage/coverage-summary.json
-          json-final-path: |
-            packages/core/coverage/coverage-final.json
-            packages/cli/coverage/coverage-final.json
+          recreate: true
+          path: coverage_report.md
