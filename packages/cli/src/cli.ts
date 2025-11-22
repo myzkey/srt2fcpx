@@ -4,29 +4,17 @@ import { basename, join, resolve } from 'node:path'
 import type { Srt2FcpxOptions } from '@srt2fcpx/core'
 import { convertSrtToFcpxml } from '@srt2fcpx/core'
 import { program } from 'commander'
+import {
+  type CliOptions,
+  type ConfigFile,
+  DEFAULT_CONFIG,
+  mergeConfig,
+} from './config.js'
 import { logger, setQuiet } from './logger.js'
 
 const packageJson = JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf-8'),
 )
-
-/**
- * Config file interface
- */
-interface ConfigFile {
-  title?: string
-  fps?: number
-  width?: number
-  height?: number
-  font?: string
-  size?: number
-  face?: string
-  color?: string
-  bg?: string
-  strokeColor?: string
-  strokeWidth?: number
-  formatVersion?: string
-}
 
 /**
  * Load config file from various locations
@@ -130,7 +118,7 @@ program
 
       // Merge config: CLI options > config file > defaults
       // Commander sets default values, so we need to check if values were explicitly provided
-      const mergedOptions = {
+      const cliOptions: CliOptions = {
         title: options.title,
         fps: options.fps,
         width: options.width,
@@ -145,57 +133,7 @@ program
         formatVersion: options.formatVersion,
       }
 
-      // Apply config file values if CLI options are at their defaults
-      if (config) {
-        const defaults = {
-          title: 'Converted from SRT',
-          fps: 24,
-          width: 1920,
-          height: 1080,
-          font: 'Helvetica',
-          size: 72,
-          face: 'Regular',
-          color: '#FFFFFFFF',
-          bg: '#00000000',
-          strokeColor: '#000000FF',
-          strokeWidth: 0,
-          formatVersion: '1.8',
-        }
-
-        if (mergedOptions.title === defaults.title && config.title)
-          mergedOptions.title = config.title
-        if (mergedOptions.fps === defaults.fps && config.fps)
-          mergedOptions.fps = config.fps
-        if (mergedOptions.width === defaults.width && config.width)
-          mergedOptions.width = config.width
-        if (mergedOptions.height === defaults.height && config.height)
-          mergedOptions.height = config.height
-        if (mergedOptions.font === defaults.font && config.font)
-          mergedOptions.font = config.font
-        if (mergedOptions.size === defaults.size && config.size)
-          mergedOptions.size = config.size
-        if (mergedOptions.face === defaults.face && config.face)
-          mergedOptions.face = config.face
-        if (mergedOptions.color === defaults.color && config.color)
-          mergedOptions.color = config.color
-        if (mergedOptions.bg === defaults.bg && config.bg)
-          mergedOptions.bg = config.bg
-        if (
-          mergedOptions.strokeColor === defaults.strokeColor &&
-          config.strokeColor
-        )
-          mergedOptions.strokeColor = config.strokeColor
-        if (
-          mergedOptions.strokeWidth === defaults.strokeWidth &&
-          config.strokeWidth !== undefined
-        )
-          mergedOptions.strokeWidth = config.strokeWidth
-        if (
-          mergedOptions.formatVersion === defaults.formatVersion &&
-          config.formatVersion
-        )
-          mergedOptions.formatVersion = config.formatVersion
-      }
+      const mergedOptions = mergeConfig(cliOptions, config)
 
       // Build conversion options
       const conversionOptions: Srt2FcpxOptions = {
@@ -227,30 +165,30 @@ program
 
       // Show applied options if different from defaults
       const shownOptions: string[] = []
-      if (mergedOptions.title !== 'Converted from SRT')
+      if (mergedOptions.title !== DEFAULT_CONFIG.title)
         shownOptions.push(`title: ${mergedOptions.title}`)
-      if (mergedOptions.fps !== 24)
+      if (mergedOptions.fps !== DEFAULT_CONFIG.fps)
         shownOptions.push(`fps: ${mergedOptions.fps}`)
-      if (mergedOptions.width !== 1920)
+      if (mergedOptions.width !== DEFAULT_CONFIG.width)
         shownOptions.push(`width: ${mergedOptions.width}`)
-      if (mergedOptions.height !== 1080)
+      if (mergedOptions.height !== DEFAULT_CONFIG.height)
         shownOptions.push(`height: ${mergedOptions.height}`)
-      if (mergedOptions.font !== 'Helvetica')
+      if (mergedOptions.font !== DEFAULT_CONFIG.font)
         shownOptions.push(`font: ${mergedOptions.font}`)
-      if (mergedOptions.size !== 72)
+      if (mergedOptions.size !== DEFAULT_CONFIG.size)
         shownOptions.push(`size: ${mergedOptions.size}`)
-      if (mergedOptions.face !== 'Regular')
+      if (mergedOptions.face !== DEFAULT_CONFIG.face)
         shownOptions.push(`face: ${mergedOptions.face}`)
-      if (mergedOptions.color !== '#FFFFFFFF')
+      if (mergedOptions.color !== DEFAULT_CONFIG.color)
         shownOptions.push(`color: ${mergedOptions.color}`)
-      if (mergedOptions.bg !== '#00000000')
+      if (mergedOptions.bg !== DEFAULT_CONFIG.bg)
         shownOptions.push(`bg: ${mergedOptions.bg}`)
-      if (mergedOptions.strokeWidth !== 0) {
+      if (mergedOptions.strokeWidth !== DEFAULT_CONFIG.strokeWidth) {
         shownOptions.push(
           `stroke: ${mergedOptions.strokeColor} (width: ${mergedOptions.strokeWidth})`,
         )
       }
-      if (mergedOptions.formatVersion !== '1.8')
+      if (mergedOptions.formatVersion !== DEFAULT_CONFIG.formatVersion)
         shownOptions.push(`format: ${mergedOptions.formatVersion}`)
 
       if (shownOptions.length > 0) {
