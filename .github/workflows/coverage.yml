@@ -1,0 +1,98 @@
+name: Coverage Report
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20.x'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Run tests with coverage
+        run: pnpm test:coverage
+
+      - name: Generate Coverage Report
+        id: coverage
+        run: |
+          cat > coverage_report.md << 'EOF'
+          ## 📊 Code Coverage Report
+
+          EOF
+
+          if [ -f "packages/core/coverage/coverage-summary.json" ]; then
+            echo "### @srt2fcpx/core Package" >> coverage_report.md
+            echo "" >> coverage_report.md
+            node -e "
+              const coverage = require('./packages/core/coverage/coverage-summary.json');
+              const { lines, functions, branches, statements } = coverage.total;
+              console.log('| Metric | Coverage |');
+              console.log('|--------|----------|');
+              console.log('| **Lines** | **' + lines.pct + '%** (' + lines.covered + '/' + lines.total + ') |');
+              console.log('| **Functions** | **' + functions.pct + '%** (' + functions.covered + '/' + functions.total + ') |');
+              console.log('| **Branches** | **' + branches.pct + '%** (' + branches.covered + '/' + branches.total + ') |');
+              console.log('| **Statements** | **' + statements.pct + '%** (' + statements.covered + '/' + statements.total + ') |');
+              console.log('');
+            " >> coverage_report.md
+          else
+            echo "❌ Core coverage not available" >> coverage_report.md
+          fi
+
+          if [ -f "packages/cli/coverage/coverage-summary.json" ]; then
+            echo "### srt2fcpx (CLI) Package" >> coverage_report.md
+            echo "" >> coverage_report.md
+            node -e "
+              const coverage = require('./packages/cli/coverage/coverage-summary.json');
+              const { lines, functions, branches, statements } = coverage.total;
+              console.log('| Metric | Coverage |');
+              console.log('|--------|----------|');
+              console.log('| **Lines** | **' + lines.pct + '%** (' + lines.covered + '/' + lines.total + ') |');
+              console.log('| **Functions** | **' + functions.pct + '%** (' + functions.covered + '/' + functions.total + ') |');
+              console.log('| **Branches** | **' + branches.pct + '%** (' + branches.covered + '/' + branches.total + ') |');
+              console.log('| **Statements** | **' + statements.pct + '%** (' + statements.covered + '/' + statements.total + ') |');
+              console.log('');
+            " >> coverage_report.md
+          else
+            echo "❌ CLI coverage not available" >> coverage_report.md
+          fi
+
+          echo "---" >> coverage_report.md
+          echo "*Coverage reports updated automatically by GitHub Actions*" >> coverage_report.md
+
+      - name: Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: always()
+        with:
+          recreate: true
+          path: coverage_report.md

@@ -36,6 +36,7 @@
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -45,11 +46,12 @@
   "devDependencies": {
     "@srt2fcpx/tsconfig": "workspace:*",
     "@types/node": "^22.10.2",
+    "@vitest/coverage-v8": "^4.0.13",
     "dts-bundle-generator": "^9.5.1",
     "esbuild": "^0.24.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^4.0.9"
+    "vitest": "^4.0.13"
   },
   "keywords": [
     "srt",
