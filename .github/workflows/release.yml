@@ -14,7 +14,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      id-token: write
+      id-token: write  # OIDC for Trusted Publishers
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,6 +28,10 @@ jobs:
           node-version: 20
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
+          always-auth: true
+
+      - name: Update npm to latest version
+        run: npm install -g npm@latest
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -43,9 +47,14 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Debug OIDC Token
+        run: |
+          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ env.ACTIONS_ID_TOKEN_REQUEST_TOKEN != '' }}"
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL: ${{ env.ACTIONS_ID_TOKEN_REQUEST_URL != '' }}"
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
-        uses: changesets/action@v1
+        uses: changesets/action@v1.5.3
         with:
           publish: pnpm release
           version: pnpm changeset version
@@ -55,3 +64,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
+          # No NPM_TOKEN needed for Trusted Publishers (OIDC)
