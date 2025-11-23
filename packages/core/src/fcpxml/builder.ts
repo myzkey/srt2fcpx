@@ -83,7 +83,7 @@ function validateXmlInput(input: string): { isValid: boolean; reason?: string } 
     /<!(?:DOCTYPE|ENTITY)/i,     // DOCTYPE or ENTITY declarations
     /<!-{2,}/,                   // Comment injection attempts
     /<!\[CDATA\[/i,              // CDATA injection attempts
-    /\]\]>/,                     // CDATA closing attempts
+    // Removed /\]\]>/ - this should be escaped, not rejected entirely
     /<\?xml/i,                   // XML declaration injection
     /<script[^>]*>/i,            // Script tags
     /javascript:/i,              // JavaScript protocol
@@ -340,7 +340,9 @@ export function buildFcpxml(cues: SrtCue[], options?: Srt2FcpxOptions): string {
   const backgroundColor = hexToFcpxmlColor(backgroundHex)
   const strokeColor = hexToFcpxmlColor(strokeColorHex)
 
-  const escapedTitle = escapeXmlContent(titleName)
+  // Use default title for empty or whitespace-only titles to avoid XML issues
+  const cleanTitle = titleName.trim() || 'Untitled Project'
+  const escapedTitle = escapeXmlContent(cleanTitle)
 
   const titlesXml = cues
     .map((cue, index) =>
@@ -394,7 +396,12 @@ export function buildFcpxmlFromTemplate(
     ...options,
   }
 
-  const { frameRate } = opts
+  const { frameRate, titleName } = opts
+
+  // Use default title for empty or whitespace-only titles to avoid XML issues
+  const cleanTitle = titleName.trim() || 'Untitled Project'
+  // Escape the project title for safe XML insertion
+  const escapedTitle = escapeXmlContent(cleanTitle)
 
   // Load templates
   const { baseTemplate, titleTemplate } = loadTemplates()
@@ -412,6 +419,7 @@ export function buildFcpxmlFromTemplate(
 
   // Replace placeholders in base template
   return baseTemplate
+    .replace(/{PROJECT_TITLE}/g, escapedTitle)
     .replace(/{SEQUENCE_DURATION}/g, totalDuration)
     .replace(/{TITLES}/g, titlesXml)
 }

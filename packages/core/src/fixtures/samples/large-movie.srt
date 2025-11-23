@@ -1,0 +1,126 @@
+1
+00:00:01,000 --> 00:00:03,500
+OPENING CREDITS
+A Film by Director Name
+
+2
+00:00:03,800 --> 00:00:06,200
+INT. LIVING ROOM - DAY
+
+3
+00:00:06,500 --> 00:00:09,000
+JOHN enters the room quietly.
+
+4
+00:00:09,300 --> 00:00:11,800
+JOHN
+(whispering)
+Is anyone home?
+
+5
+00:00:12,100 --> 00:00:14,600
+The house is eerily silent.
+Only the clock ticks.
+
+6
+00:00:14,900 --> 00:00:17,400
+MARY (O.S.)
+John? Is that you?
+
+7
+00:00:17,700 --> 00:00:20,200
+JOHN
+Yeah, it's me.
+Where are you?
+
+8
+00:00:20,500 --> 00:00:23,000
+MARY enters from the kitchen,
+wiping her hands on a towel.
+
+9
+00:00:23,300 --> 00:00:25,800
+MARY
+I was making dinner.
+How was your day?
+
+10
+00:00:26,100 --> 00:00:28,600
+JOHN
+Long. Really long.
+I need to tell you something.
+
+11
+00:00:28,900 --> 00:00:31,400
+MARY
+(concerned)
+What is it?
+
+12
+00:00:31,700 --> 00:00:34,200
+JOHN
+I got the promotion.
+
+13
+00:00:34,500 --> 00:00:37,000
+MARY
+(excited)
+Oh my God! Really?
+
+14
+00:00:37,300 --> 00:00:39,800
+JOHN
+Really. We're moving to New York.
+
+15
+00:00:40,100 --> 00:00:42,600
+MARY
+(pause)
+When?
+
+16
+00:00:42,900 --> 00:00:45,400
+JOHN
+Next month.
+
+17
+00:00:45,700 --> 00:00:48,200
+Mary sits down heavily.
+
+18
+00:00:48,500 --> 00:00:51,000
+MARY
+Next month? But what about...
+
+19
+00:00:51,300 --> 00:00:53,800
+JOHN
+What about what?
+
+20
+00:00:54,100 --> 00:00:56,600
+MARY
+Everything. Our life here.
+
+21
+00:00:56,900 --> 00:00:59,400
+JOHN
+This is our future, Mary.
+Our chance.
+
+22
+00:00:59,700 --> 00:01:02,200
+MARY
+I know, but...
+
+23
+00:01:02,500 --> 00:01:05,000
+The conversation continues...
+
+24
+00:01:05,300 --> 00:01:07,800
+FADE TO BLACK.
+
+25
+00:01:08,100 --> 00:01:10,600
+END OF SCENE 1

@@ -573,4 +573,176 @@ Text`
       expect(decodeHtmlEntities('&#127926;')).toBe('🎶') // U+1F3B6 (multiple musical notes)
     })
   })
+
+  describe('Real-world SRT samples', () => {
+    it('should handle Netflix-style subtitles with formatting', () => {
+      const netflixSrt = `1
+00:00:01,500 --> 00:00:04,200
+Welcome to our streaming platform.
+Experience premium content.
+
+2
+00:00:04,500 --> 00:00:07,800
+<font color="#FFFF00">NARRATOR:</font>
+In a world where technology...
+
+3
+00:00:08,100 --> 00:00:12,300
+[INTENSE MUSIC PLAYING]
+The future depends on us.
+
+4
+00:00:12,600 --> 00:00:15,900
+♪ Theme song begins ♪
+<i>Original soundtrack by...</i>`
+
+      const result = parseSrt(netflixSrt)
+      expect(result.cues).toHaveLength(4)
+      expect(result.cues[0].text).toBe('Welcome to our streaming platform.\nExperience premium content.')
+      expect(result.cues[1].text).toBe('NARRATOR:\nIn a world where technology...')
+      expect(result.cues[2].text).toBe('[INTENSE MUSIC PLAYING]\nThe future depends on us.')
+      expect(result.cues[3].text).toBe('♪ Theme song begins ♪\nOriginal soundtrack by...')
+    })
+
+    it('should handle YouTube auto-generated style subtitles', () => {
+      const youtubeSrt = `1
+00:00:00,000 --> 00:00:02,960
+hey everyone welcome back to my channel
+
+2
+00:00:02,960 --> 00:00:05,520
+today we're going to be talking about
+
+3
+00:00:05,520 --> 00:00:08,400
+something really exciting so make sure`
+
+      const result = parseSrt(youtubeSrt)
+      expect(result.cues).toHaveLength(3)
+      expect(result.cues[0].text).toBe('hey everyone welcome back to my channel')
+      expect(result.cues[1].text).toBe('today we\'re going to be talking about')
+      expect(result.cues[2].text).toBe('something really exciting so make sure')
+    })
+
+    it('should handle multilingual content with emoji', () => {
+      const multilingualSrt = `1
+00:00:01,000 --> 00:00:03,500
+Hello! 😀 こんにちは！
+
+2
+00:00:03,800 --> 00:00:06,200
+Welcome to Tokyo! 🗾
+東京へようこそ！
+
+3
+00:00:06,500 --> 00:00:09,000
+🍣 Let's eat sushi together! 🥢
+一緒に寿司を食べましょう！`
+
+      const result = parseSrt(multilingualSrt)
+      expect(result.cues).toHaveLength(3)
+      expect(result.cues[0].text).toBe('Hello! 😀 こんにちは！')
+      expect(result.cues[1].text).toBe('Welcome to Tokyo! 🗾\n東京へようこそ！')
+      expect(result.cues[2].text).toBe('🍣 Let\'s eat sushi together! 🥢\n一緒に寿司を食べましょう！')
+    })
+
+    it('should handle problematic real-world content safely', () => {
+      const problemSrt = `1
+00:00:01,500 --> 00:00:04,000
+Normal subtitle here.
+
+2
+00:00:04,500 --> 00:00:07,000
+<font color="red" size="14px">Colored text with size</font>
+
+3
+00:00:07,500 --> 00:00:10,000
+HTML entities: &amp; &lt; &gt; &quot; &#39; &copy; &trade;
+
+4
+00:00:10,500 --> 00:00:13,000
+<script>alert('xss')</script>Dangerous content<style>body{display:none}</style>
+
+5
+00:00:13,500 --> 00:00:16,000
+CSS injection: <span style="background: url(javascript:alert(1))">Test</span>`
+
+      const result = parseSrt(problemSrt)
+      expect(result.cues).toHaveLength(5)
+      expect(result.cues[0].text).toBe('Normal subtitle here.')
+      expect(result.cues[1].text).toBe('Colored text with size')
+      expect(result.cues[2].text).toBe('HTML entities: & < > " \' © ™')
+      expect(result.cues[3].text).toBe('Dangerous content') // Script/style removed
+      expect(result.cues[4].text).toBe('CSS injection: Test') // CSS injection blocked
+    })
+
+    it('should handle large files with many subtitles efficiently', () => {
+      // Generate a large SRT content
+      let largeSrt = ''
+      for (let i = 1; i <= 100; i++) {
+        const startTime = String(Math.floor(i / 4)).padStart(2, '0')
+        const startSec = String((i % 4) * 15).padStart(2, '0')
+        const endSec = String(((i % 4) * 15) + 10).padStart(2, '0')
+
+        largeSrt += `${i}
+00:${startTime}:${startSec},000 --> 00:${startTime}:${endSec},000
+Subtitle number ${i}: This is a test subtitle with some content.
+
+`
+      }
+
+      const startTime = Date.now()
+      const result = parseSrt(largeSrt)
+      const endTime = Date.now()
+
+      expect(result.cues).toHaveLength(100)
+      expect(endTime - startTime).toBeLessThan(100) // Should parse in under 100ms
+      expect(result.cues[0].text).toBe('Subtitle number 1: This is a test subtitle with some content.')
+      expect(result.cues[99].text).toBe('Subtitle number 100: This is a test subtitle with some content.')
+    })
+
+    it('should handle mixed encoding and special characters', () => {
+      const specialCharsSrt = `1
+00:00:01,000 --> 00:00:03,000
+café naïve résumé piñata
+
+2
+00:00:03,500 --> 00:00:06,000
+北京 东京 上海 香港
+
+3
+00:00:06,500 --> 00:00:09,000
+عربي فارسی עברית
+
+4
+00:00:09,500 --> 00:00:12,000
+русский українська polski`
+
+      const result = parseSrt(specialCharsSrt)
+      expect(result.cues).toHaveLength(4)
+      expect(result.cues[0].text).toBe('café naïve résumé piñata')
+      expect(result.cues[1].text).toBe('北京 东京 上海 香港')
+      expect(result.cues[2].text).toBe('عربي فارسی עברית')
+      expect(result.cues[3].text).toBe('русский українська polski')
+    })
+
+    it('should handle malformed timestamps gracefully', () => {
+      const malformedSrt = `1
+00:00:01,500 --> 00:00:04,000
+Normal subtitle
+
+2
+00:04,000 -> 00:00:07,000
+Malformed arrow
+
+3
+00:00:07,500 --> 00:00:10,000
+Another normal subtitle`
+
+      const result = parseSrt(malformedSrt)
+      // Should skip malformed entry but continue with valid ones
+      expect(result.cues.length).toBeGreaterThan(0)
+      expect(result.errors.length).toBeGreaterThan(0)
+    })
+  })
 })

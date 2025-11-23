@@ -1,0 +1,34 @@
+1
+00:00:01,500 --> 00:00:04,200
+Welcome to our streaming platform.
+Experience premium content.
+
+2
+00:00:04,500 --> 00:00:07,800
+<font color="#FFFF00">NARRATOR:</font>
+In a world where technology...
+
+3
+00:00:08,100 --> 00:00:12,300
+[INTENSE MUSIC PLAYING]
+The future depends on us.
+
+4
+00:00:12,600 --> 00:00:15,900
+♪ Theme song begins ♪
+<i>Original soundtrack by...</i>
+
+5
+00:00:16,200 --> 00:00:19,500
+- Are you ready?
+- <b>Always ready.</b>
+
+6
+00:00:19,800 --> 00:00:23,100
+EPISODE 1: "THE BEGINNING"
+<font color="#00FF00">Subtitle by Netflix</font>
+
+7
+00:00:23,400 --> 00:00:27,700
+Visit netflix.com for more information.
+© 2024 Netflix, Inc.

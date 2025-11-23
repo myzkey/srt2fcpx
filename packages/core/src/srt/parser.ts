@@ -67,7 +67,13 @@ export function parseSrt(source: string): SrtParseResult {
       }
 
       // Parse text (remaining lines)
-      const text = lines.slice(2).join('\n').trim()
+      let text = lines.slice(2).join('\n')
+      // Remove leading and trailing newlines but preserve intentional spaces
+      text = text.replace(/^\n+/, '').replace(/\n+$/, '')
+
+      // Strip HTML tags and decode entities for clean text output
+      text = stripHtmlTags(text)
+      text = decodeHtmlEntities(text)
 
       if (!text) {
         errors.push(`Empty text in cue ${index}`)
@@ -220,10 +226,56 @@ function validateStyleAttribute(styleValue: string): boolean {
  * Strip HTML-like tags from text with enhanced security and functionality
  */
 export function stripHtmlTags(text: string): string {
+  const originalText = text
   let cleaned = text
 
-  // Remove HTML comments (<!-- ... -->) and normalize surrounding whitespace
-  cleaned = cleaned.replace(/\s*<!--[\s\S]*?-->\s*/g, ' ')
+  // Track if we actually processed any HTML content
+  const hadHtmlTags = /<[^>]*>/.test(text)
+  const hadHtmlComments = /<!--[\s\S]*?-->/.test(text)
+  const hadHtmlEntities = /&[#\w]+;/.test(text)
+
+  // Remove HTML comments with proper nesting handling
+  // Use a stack-based approach to handle nested comments correctly
+  let result = ''
+  let i = 0
+  let commentDepth = 0
+
+  while (i < cleaned.length) {
+    if (i <= cleaned.length - 4 && cleaned.substring(i, i + 4) === '<!--') {
+      // Start of comment
+      if (commentDepth === 0) {
+        // Add space to separate words if we're starting a new comment
+        if (result.length > 0 && !result.endsWith(' ')) {
+          result += ' '
+        }
+      }
+      commentDepth++
+      i += 4
+    } else if (i <= cleaned.length - 3 && cleaned.substring(i, i + 3) === '-->') {
+      // End of comment
+      if (commentDepth > 0) {
+        commentDepth--
+        if (commentDepth === 0) {
+          // Add space after comment if needed
+          if (i + 3 < cleaned.length && !cleaned.charAt(i + 3).match(/\s/)) {
+            result += ' '
+          }
+        }
+      } else {
+        // Orphaned closing tag, keep it
+        result += cleaned.charAt(i)
+      }
+      i += commentDepth > 0 ? 3 : 1
+    } else {
+      // Regular character
+      if (commentDepth === 0) {
+        result += cleaned.charAt(i)
+      }
+      i++
+    }
+  }
+
+  cleaned = result
 
   // Remove script and style content (security measure)
   cleaned = cleaned.replace(/<script[\s\S]*?<\/script>/gi, '')
@@ -273,31 +325,35 @@ export function stripHtmlTags(text: string): string {
   // Collapse excessive whitespace (3+ consecutive spaces) to double space
   cleaned = cleaned.replace(/ {3,}/g, '  ')
 
-  // BUT preserve double spaces that were intentional from malformed tags
-  // We need to differentiate between spaces from comments vs spaces from malformed content
-
   // Clean up multiple consecutive newlines
   cleaned = cleaned.replace(/\n+/g, '\n')
 
   // Clean up whitespace around newlines
   cleaned = cleaned.replace(/ +\n/g, '\n').replace(/\n +/g, '\n')
 
-  // Trim leading and trailing whitespace, but preserve entity-decoded spaces that are meaningful
-  // Check if the original contained entities that would create leading/trailing spaces
-  const hasLeadingEntitySpace = text.match(/^\s*&nbsp;/)
-  const hasTrailingEntitySpace = text.match(/&nbsp;\s*$/)
+  // Only trim if we actually processed HTML content that could introduce unwanted whitespace
+  // Otherwise preserve the original whitespace structure
+  if (hadHtmlTags || hadHtmlComments || hadHtmlEntities) {
+    // Check if the original contained entities that would create leading/trailing spaces
+    const hasLeadingEntitySpace = originalText.match(/^\s*&nbsp;/)
+    const hasTrailingEntitySpace = originalText.match(/&nbsp;\s*$/)
 
-  if (!hasLeadingEntitySpace && !hasTrailingEntitySpace) {
-    // Normal case - trim both ends
-    cleaned = cleaned.trim()
+    if (!hasLeadingEntitySpace && !hasTrailingEntitySpace) {
+      // Normal case - trim both ends since HTML processing likely added whitespace
+      cleaned = cleaned.trim()
+    } else {
+      // Preserve entity-decoded spaces
+      if (!hasLeadingEntitySpace) {
+        cleaned = cleaned.replace(/^ +/, '')
+      }
+      if (!hasTrailingEntitySpace) {
+        cleaned = cleaned.replace(/ +$/, '')
+      }
+    }
   } else {
-    // Preserve entity-decoded spaces
-    if (!hasLeadingEntitySpace) {
-      cleaned = cleaned.replace(/^ +/, '')
-    }
-    if (!hasTrailingEntitySpace) {
-      cleaned = cleaned.replace(/ +$/, '')
-    }
+    // No HTML processing needed - only trim whitespace that was clearly added by line processing
+    // Remove only leading/trailing newlines and excessive spaces but preserve intentional spaces
+    cleaned = cleaned.replace(/^\n+/, '').replace(/\n+$/, '')
   }
 
   return cleaned
