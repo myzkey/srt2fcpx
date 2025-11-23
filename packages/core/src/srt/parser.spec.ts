@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatSrtTimecode, parseSrt, stripHtmlTags } from './parser'
+import { decodeHtmlEntities, formatSrtTimecode, parseSrt, stripHtmlTags } from './parser'
 
 describe('SRT Parser', () => {
   describe('parseSrt', () => {
@@ -322,6 +322,122 @@ Text`
         'Normal <b>bold</b> text with <i>italic</i> and <u>underline</u>'
       const expected = 'Normal bold text with italic and underline'
       expect(stripHtmlTags(input)).toBe(expected)
+    })
+
+    // Enhanced tests for improved functionality
+    it('should remove HTML comments', () => {
+      expect(stripHtmlTags('Text <!-- comment --> more text')).toBe('Text more text')
+      expect(stripHtmlTags('<!-- Start comment -->Text<!-- End comment -->')).toBe('Text')
+    })
+
+    it('should remove script tags (security)', () => {
+      expect(stripHtmlTags('Text<script>alert("XSS")</script>more')).toBe('Textmore')
+      expect(stripHtmlTags('<script src="malicious.js"></script>Clean text')).toBe('Clean text')
+    })
+
+    it('should remove style tags', () => {
+      expect(stripHtmlTags('Text<style>body{color:red}</style>more')).toBe('Textmore')
+      expect(stripHtmlTags('<style type="text/css">.class{}</style>Clean')).toBe('Clean')
+    })
+
+    it('should handle malformed tags', () => {
+      expect(stripHtmlTags('Text<tag without closing')).toBe('Text')
+      expect(stripHtmlTags('Text<')).toBe('Text')
+      expect(stripHtmlTags('Text< incomplete tag')).toBe('Text')
+    })
+
+    it('should decode HTML entities', () => {
+      expect(stripHtmlTags('&amp; &lt; &gt; &quot;')).toBe('& < > "')
+      expect(stripHtmlTags('&copy; &reg; &trade;')).toBe('© ® ™')
+      expect(stripHtmlTags('&nbsp;Text&nbsp;')).toBe(' Text ')
+    })
+
+    it('should decode numeric entities', () => {
+      expect(stripHtmlTags('&#65;&#66;&#67;')).toBe('ABC')
+      expect(stripHtmlTags('&#x41;&#x42;&#x43;')).toBe('ABC')
+      expect(stripHtmlTags('Letter: &#65;')).toBe('Letter: A')
+    })
+
+    it('should handle complex nested HTML', () => {
+      const input = '<div class="subtitle"><b>Bold <i>and italic</i></b> &amp; <u>underline</u></div>'
+      const expected = 'Bold and italic & underline'
+      expect(stripHtmlTags(input)).toBe(expected)
+    })
+
+    it('should clean up excessive whitespace', () => {
+      expect(stripHtmlTags('  Multiple   \n  \t  spaces  ')).toBe('Multiple\nspaces')
+      expect(stripHtmlTags('<br>Line1<br/><br>Line2<br>')).toBe('Line1Line2')
+    })
+
+    it('should handle edge cases safely', () => {
+      expect(stripHtmlTags('<>&<>')).toBe('&')
+      expect(stripHtmlTags('<<>>')).toBe('>')
+      expect(stripHtmlTags('Text<<<>>>')).toBe('Text >>')
+    })
+
+    it('should handle real-world SRT content', () => {
+      const input = '<font color="yellow">Warning:</font> <b>Danger ahead!</b><br>Please be careful.'
+      const expected = 'Warning: Danger ahead! Please be careful.'
+      expect(stripHtmlTags(input)).toBe(expected)
+    })
+  })
+
+  describe('decodeHtmlEntities', () => {
+    it('should decode basic HTML entities', () => {
+      expect(decodeHtmlEntities('&amp;')).toBe('&')
+      expect(decodeHtmlEntities('&lt;')).toBe('<')
+      expect(decodeHtmlEntities('&gt;')).toBe('>')
+      expect(decodeHtmlEntities('&quot;')).toBe('"')
+      expect(decodeHtmlEntities('&#39;')).toBe("'")
+    })
+
+    it('should decode special character entities', () => {
+      expect(decodeHtmlEntities('&copy;')).toBe('©')
+      expect(decodeHtmlEntities('&reg;')).toBe('®')
+      expect(decodeHtmlEntities('&trade;')).toBe('™')
+      expect(decodeHtmlEntities('&euro;')).toBe('€')
+      expect(decodeHtmlEntities('&pound;')).toBe('£')
+      expect(decodeHtmlEntities('&yen;')).toBe('¥')
+      expect(decodeHtmlEntities('&nbsp;')).toBe(' ')
+    })
+
+    it('should decode numeric entities (decimal)', () => {
+      expect(decodeHtmlEntities('&#65;')).toBe('A')
+      expect(decodeHtmlEntities('&#97;')).toBe('a')
+      expect(decodeHtmlEntities('&#48;')).toBe('0')
+      expect(decodeHtmlEntities('&#8364;')).toBe('€')
+    })
+
+    it('should decode numeric entities (hexadecimal)', () => {
+      expect(decodeHtmlEntities('&#x41;')).toBe('A')
+      expect(decodeHtmlEntities('&#x61;')).toBe('a')
+      expect(decodeHtmlEntities('&#x30;')).toBe('0')
+      expect(decodeHtmlEntities('&#x20AC;')).toBe('€')
+      expect(decodeHtmlEntities('&#X20AC;')).toBe('€') // Case insensitive
+    })
+
+    it('should handle multiple entities in text', () => {
+      expect(decodeHtmlEntities('AT&amp;T &lt;company&gt; &quot;quotes&quot;')).toBe('AT&T <company> "quotes"')
+    })
+
+    it('should handle invalid entities gracefully', () => {
+      expect(decodeHtmlEntities('&#999999;')).toBe('') // Out of range
+      expect(decodeHtmlEntities('&#-1;')).toBe('') // Negative
+      expect(decodeHtmlEntities('&#x999999;')).toBe('') // Out of range hex
+      expect(decodeHtmlEntities('&invalid;')).toBe('&invalid;') // Unknown entity
+    })
+
+    it('should be case insensitive for named entities', () => {
+      expect(decodeHtmlEntities('&AMP;')).toBe('&')
+      expect(decodeHtmlEntities('&Lt;')).toBe('<')
+      expect(decodeHtmlEntities('&GT;')).toBe('>')
+    })
+
+    it('should handle empty and edge cases', () => {
+      expect(decodeHtmlEntities('')).toBe('')
+      expect(decodeHtmlEntities('No entities here')).toBe('No entities here')
+      expect(decodeHtmlEntities('&;')).toBe('&;') // Incomplete entity
+      expect(decodeHtmlEntities('&#;')).toBe('&#;') // Incomplete numeric entity
     })
   })
 })

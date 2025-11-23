@@ -12,7 +12,7 @@ export type { Srt2FcpxOptions, SrtCue, SrtParseResult }
 
 // Export functions
 export { buildFcpxml, buildFcpxmlFromTemplate } from '~/fcpxml/builder'
-export { formatSrtTimecode, parseSrt, stripHtmlTags } from '~/srt/parser'
+export { decodeHtmlEntities, formatSrtTimecode, parseSrt, stripHtmlTags } from '~/srt/parser'
 
 /**
  * Convert SRT content to FCPXML
