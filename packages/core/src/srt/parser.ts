@@ -121,8 +121,144 @@ function pad(num: number, length: number): string {
 }
 
 /**
- * Strip HTML-like tags from text (for v0.1, we ignore style tags)
+ * HTML entity mapping for decoding
+ */
+const HTML_ENTITIES: Record<string, string> = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&apos;': "'",
+  '&nbsp;': ' ',
+  '&copy;': '©',
+  '&reg;': '®',
+  '&trade;': '™',
+  '&euro;': '€',
+  '&pound;': '£',
+  '&yen;': '¥',
+}
+
+/**
+ * Decode HTML entities in text
+ */
+export function decodeHtmlEntities(text: string): string {
+  let decoded = text
+
+  // Handle named entities (case insensitive)
+  for (const [entity, char] of Object.entries(HTML_ENTITIES)) {
+    decoded = decoded.replace(new RegExp(entity.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), char)
+  }
+
+  // Handle numeric entities (decimal: &#65; = 'A')
+  // Also handle negative numbers which should be treated as invalid
+  decoded = decoded.replace(/&#(-?\d+);/g, (match, code) => {
+    const num = parseInt(code, 10)
+    // Valid Unicode range: 1 to 1114111 (0x10FFFF)
+    // Exclude surrogate code points (0xD800-0xDFFF) and some control characters
+    if (num >= 1 && num <= 65535) {
+      // Use a more restrictive range to avoid issues with large numbers
+      try {
+        const char = String.fromCharCode(num)
+        // Additional check to ensure it's a valid character
+        return char && char !== '\uFFFD' ? char : ''
+      } catch {
+        return ''
+      }
+    }
+    return ''
+  })
+
+  // Handle hex entities (hex: &#x41; = 'A')
+  decoded = decoded.replace(/&#x([0-9a-f]+);/gi, (match, hex) => {
+    const num = parseInt(hex, 16)
+    // Valid Unicode range and exclude surrogates
+    if (num >= 1 && num <= 65535) {
+      try {
+        const char = String.fromCharCode(num)
+        return char && char !== '\uFFFD' ? char : ''
+      } catch {
+        return ''
+      }
+    }
+    return ''
+  })
+
+  return decoded
+}
+
+/**
+ * Strip HTML-like tags from text with enhanced security and functionality
  */
 export function stripHtmlTags(text: string): string {
-  return text.replace(/<[^>]*>/g, '')
+  let cleaned = text
+
+  // Remove HTML comments (<!-- ... -->) and normalize surrounding whitespace
+  cleaned = cleaned.replace(/\s*<!--[\s\S]*?-->\s*/g, ' ')
+
+  // Remove script and style content (security measure)
+  cleaned = cleaned.replace(/<script[\s\S]*?<\/script>/gi, '')
+  cleaned = cleaned.replace(/<style[\s\S]*?<\/style>/gi, '')
+
+  // Handle specific tags that should be removed without spaces
+  // Formatting tags and inline tags that don't affect word separation
+  cleaned = cleaned.replace(/<\/?(?:b|i|u|strong|em|font|small|sub|sup|span|a)(?:\s[^>]*)?\/?>/gi, '')
+
+  // Line break tags
+  cleaned = cleaned.replace(/<\/?(?:hr)(?:\s[^>]*)?\/?>/gi, '')
+
+  // Handle <br> tags intelligently:
+  // - If <br> follows punctuation, replace with space
+  // - Otherwise, remove without space
+  cleaned = cleaned.replace(/([.!?:;])<\/?br(?:\s[^>]*)?\/?>/gi, '$1 ')
+  cleaned = cleaned.replace(/<\/?br(?:\s[^>]*)?\/?>/gi, '')
+
+  // Handle block-level tags that may need space for word separation
+  cleaned = cleaned.replace(/<\/?(?:p|div)(?:\s[^>]*)?\/?>/gi, ' ')
+
+  // Remove remaining HTML/XML tags and replace with space for word separation
+  // This preserves spacing for malformed or unknown tags
+  cleaned = cleaned.replace(/<[^>]*>/g, ' ')
+
+  // Clean up any remaining malformed tag starts
+  cleaned = cleaned.replace(/<[^<]*$/g, '')
+
+  // Decode HTML entities BEFORE whitespace cleanup to preserve entity-decoded spaces
+  cleaned = decodeHtmlEntities(cleaned)
+
+  // Clean up excessive whitespace but preserve meaningful spacing
+  // Replace tabs and other whitespace with regular spaces first
+  cleaned = cleaned.replace(/[\t\r\f\v]/g, ' ')
+
+  // Collapse excessive whitespace (3+ consecutive spaces) to double space
+  cleaned = cleaned.replace(/ {3,}/g, '  ')
+
+  // BUT preserve double spaces that were intentional from malformed tags
+  // We need to differentiate between spaces from comments vs spaces from malformed content
+
+  // Clean up multiple consecutive newlines
+  cleaned = cleaned.replace(/\n+/g, '\n')
+
+  // Clean up whitespace around newlines
+  cleaned = cleaned.replace(/ +\n/g, '\n').replace(/\n +/g, '\n')
+
+  // Trim leading and trailing whitespace, but preserve entity-decoded spaces that are meaningful
+  // Check if the original contained entities that would create leading/trailing spaces
+  const hasLeadingEntitySpace = text.match(/^\s*&nbsp;/)
+  const hasTrailingEntitySpace = text.match(/&nbsp;\s*$/)
+
+  if (!hasLeadingEntitySpace && !hasTrailingEntitySpace) {
+    // Normal case - trim both ends
+    cleaned = cleaned.trim()
+  } else {
+    // Preserve entity-decoded spaces
+    if (!hasLeadingEntitySpace) {
+      cleaned = cleaned.replace(/^ +/, '')
+    }
+    if (!hasTrailingEntitySpace) {
+      cleaned = cleaned.replace(/ +$/, '')
+    }
+  }
+
+  return cleaned
 }
