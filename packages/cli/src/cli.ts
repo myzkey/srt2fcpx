@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { program } from 'commander'
-import { processCliCommand, type CliCommandOptions } from './cli-core.js'
+import { type CliCommandOptions, processCliCommand } from './cli-core.js'
 import { setQuiet } from './logger.js'
 
 const packageJson = JSON.parse(
