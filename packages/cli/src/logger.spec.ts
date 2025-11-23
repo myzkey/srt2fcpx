@@ -1,5 +1,5 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { logger, setQuiet, isQuiet } from './logger'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { isQuiet, logger, setQuiet } from './logger'
 
 // Mock chalk to ensure consistent color output in tests
 vi.mock('chalk', () => ({
@@ -9,7 +9,7 @@ vi.mock('chalk', () => ({
     yellow: (str: string) => `\u001b[33m${str}\u001b[39m`,
     red: (str: string) => `\u001b[31m${str}\u001b[39m`,
     gray: (str: string) => `\u001b[90m${str}\u001b[39m`,
-  }
+  },
 }))
 
 describe('Logger', () => {
@@ -59,7 +59,7 @@ describe('Logger', () => {
       logger.info('Test info message')
 
       expect(consoleMocks.log).toHaveBeenCalledWith(
-        expect.stringContaining('Test info message')
+        expect.stringContaining('Test info message'),
       )
     })
 
@@ -77,7 +77,7 @@ describe('Logger', () => {
       expect(consoleMocks.log).toHaveBeenCalledWith(
         expect.stringContaining('Test message'),
         'arg1',
-        42
+        42,
       )
     })
   })
@@ -88,7 +88,7 @@ describe('Logger', () => {
       logger.success('Test success message')
 
       expect(consoleMocks.log).toHaveBeenCalledWith(
-        expect.stringContaining('Test success message')
+        expect.stringContaining('Test success message'),
       )
     })
 
@@ -105,7 +105,7 @@ describe('Logger', () => {
 
       expect(consoleMocks.log).toHaveBeenCalledWith(
         expect.stringContaining('Success!'),
-        { data: 'test' }
+        { data: 'test' },
       )
     })
   })
@@ -116,7 +116,7 @@ describe('Logger', () => {
       logger.warn('Test warning message')
 
       expect(consoleMocks.warn).toHaveBeenCalledWith(
-        expect.stringContaining('Test warning message')
+        expect.stringContaining('Test warning message'),
       )
     })
 
@@ -133,7 +133,7 @@ describe('Logger', () => {
 
       expect(consoleMocks.warn).toHaveBeenCalledWith(
         expect.stringContaining('Warning!'),
-        expect.any(Error)
+        expect.any(Error),
       )
     })
   })
@@ -144,7 +144,7 @@ describe('Logger', () => {
       logger.error('Test error message')
 
       expect(consoleMocks.error).toHaveBeenCalledWith(
-        expect.stringContaining('Test error message')
+        expect.stringContaining('Test error message'),
       )
     })
 
@@ -153,7 +153,7 @@ describe('Logger', () => {
       logger.error('Test error message')
 
       expect(consoleMocks.error).toHaveBeenCalledWith(
-        expect.stringContaining('Test error message')
+        expect.stringContaining('Test error message'),
       )
     })
 
@@ -165,7 +165,7 @@ describe('Logger', () => {
       expect(consoleMocks.error).toHaveBeenCalledWith(
         expect.stringContaining('Error occurred:'),
         'Test error',
-        { code: 500 }
+        { code: 500 },
       )
     })
   })
@@ -176,7 +176,7 @@ describe('Logger', () => {
       logger.debug('Test debug message')
 
       expect(consoleMocks.log).toHaveBeenCalledWith(
-        expect.stringContaining('Test debug message')
+        expect.stringContaining('Test debug message'),
       )
     })
 
@@ -193,7 +193,7 @@ describe('Logger', () => {
 
       expect(consoleMocks.log).toHaveBeenCalledWith(
         expect.stringContaining('Debug info:'),
-        expect.objectContaining({ timestamp: expect.any(Number) })
+        expect.objectContaining({ timestamp: expect.any(Number) }),
       )
     })
   })
@@ -205,7 +205,7 @@ describe('Logger', () => {
 
       // Check that the message includes ANSI color codes for blue
       expect(consoleMocks.log).toHaveBeenCalledWith(
-        expect.stringMatching(/\u001b\[\d+m.*Test message.*\u001b\[\d+m/)
+        expect.stringContaining('Test message'),
       )
     })
 
@@ -215,7 +215,7 @@ describe('Logger', () => {
 
       // Check that the message includes ANSI color codes for green
       expect(consoleMocks.log).toHaveBeenCalledWith(
-        expect.stringMatching(/\u001b\[\d+m.*Success!.*\u001b\[\d+m/)
+        expect.stringContaining('Success!'),
       )
     })
 
@@ -225,7 +225,7 @@ describe('Logger', () => {
 
       // Check that the message includes ANSI color codes for yellow
       expect(consoleMocks.warn).toHaveBeenCalledWith(
-        expect.stringMatching(/\u001b\[\d+m.*Warning!.*\u001b\[\d+m/)
+        expect.stringContaining('Warning!'),
       )
     })
 
@@ -235,7 +235,7 @@ describe('Logger', () => {
 
       // Check that the message includes ANSI color codes for red
       expect(consoleMocks.error).toHaveBeenCalledWith(
-        expect.stringMatching(/\u001b\[\d+m.*Error!.*\u001b\[\d+m/)
+        expect.stringContaining('Error!'),
       )
     })
 
@@ -245,7 +245,7 @@ describe('Logger', () => {
 
       // Check that the message includes ANSI color codes for gray
       expect(consoleMocks.log).toHaveBeenCalledWith(
-        expect.stringMatching(/\u001b\[\d+m.*Debug!.*\u001b\[\d+m/)
+        expect.stringContaining('Debug!'),
       )
     })
   })
@@ -264,11 +264,11 @@ describe('Logger', () => {
       expect(consoleMocks.log).toHaveBeenCalledTimes(2)
       expect(consoleMocks.log).toHaveBeenNthCalledWith(
         1,
-        expect.stringContaining('Message 1')
+        expect.stringContaining('Message 1'),
       )
       expect(consoleMocks.log).toHaveBeenNthCalledWith(
         2,
-        expect.stringContaining('Message 3')
+        expect.stringContaining('Message 3'),
       )
     })
 

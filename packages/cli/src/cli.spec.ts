@@ -1,8 +1,8 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { processCliCommand, type CliCommandOptions } from './cli-core.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { type CliCommandOptions, processCliCommand } from './cli-core.js'
 import { setQuiet } from './logger.js'
 
 // Mock logger
@@ -12,10 +12,10 @@ vi.mock('./logger.js', () => ({
     info: vi.fn(),
     success: vi.fn(),
     warn: vi.fn(),
-    error: vi.fn()
+    error: vi.fn(),
   },
   setQuiet: vi.fn(),
-  isQuiet: vi.fn().mockReturnValue(false)
+  isQuiet: vi.fn().mockReturnValue(false),
 }))
 
 // Mock fs functions
@@ -26,14 +26,14 @@ const mockWriteFileSync = vi.mocked(writeFileSync)
 
 // Mock the core conversion function
 vi.mock('@srt2fcpx/core', () => ({
-  convertSrtToFcpxml: vi.fn().mockReturnValue('<fcpxml>test</fcpxml>')
+  convertSrtToFcpxml: vi.fn().mockReturnValue('<fcpxml>test</fcpxml>'),
 }))
 
 describe('CLI Integration Tests', () => {
   const tempDir = tmpdir()
   const testSrtPath = join(tempDir, 'test.srt')
   const testConfigPath = join(tempDir, '.srt2fcpxrc.json')
-  const testOutputPath = join(tempDir, 'test.fcpxml')
+  const _testOutputPath = join(tempDir, 'test.fcpxml')
 
   const mockSrtContent = `1
 00:00:01,000 --> 00:00:02,000
@@ -56,7 +56,7 @@ Test subtitle
     bg: '#00000080',
     strokeColor: '#FFFFFF80',
     strokeWidth: 2,
-    formatVersion: '1.8'
+    formatVersion: '1.8',
   }
 
   const defaultOptions: CliCommandOptions = {
@@ -71,7 +71,7 @@ Test subtitle
     bg: '#00000000',
     strokeColor: '#000000FF',
     strokeWidth: 0,
-    formatVersion: '1.8'
+    formatVersion: '1.8',
   }
 
   beforeEach(async () => {
@@ -103,12 +103,12 @@ Test subtitle
       expect(result.outputFile).toBe('test.fcpxml')
       expect(mockReadFileSync).toHaveBeenCalledWith(
         expect.stringContaining('test.srt'),
-        'utf-8'
+        'utf-8',
       )
       expect(mockWriteFileSync).toHaveBeenCalledWith(
         expect.stringContaining('test.fcpxml'),
         '<fcpxml>test</fcpxml>',
-        'utf-8'
+        'utf-8',
       )
     })
 
@@ -121,7 +121,7 @@ Test subtitle
       expect(mockWriteFileSync).toHaveBeenCalledWith(
         expect.stringContaining('custom.fcpxml'),
         '<fcpxml>test</fcpxml>',
-        'utf-8'
+        'utf-8',
       )
     })
 
@@ -137,26 +137,32 @@ Test subtitle
   describe('Config file handling', () => {
     beforeEach(() => {
       // Mock config file reading
-      mockReadFileSync.mockImplementation((path: any) => {
-        if (path.toString().includes('.srt2fcpxrc.json')) {
-          return JSON.stringify(mockConfig)
-        }
-        return mockSrtContent
-      })
+      mockReadFileSync.mockImplementation(
+        (path: string | Buffer | URL | number) => {
+          if (String(path).includes('.srt2fcpxrc.json')) {
+            return JSON.stringify(mockConfig)
+          }
+          return mockSrtContent
+        },
+      )
     })
 
     it('should load config from .srt2fcpxrc.json in current directory', () => {
-      mockExistsSync.mockImplementation((path: any) => {
-        return path.toString().includes('test.srt') ||
-               path.toString().includes('.srt2fcpxrc.json')
-      })
+      mockExistsSync.mockImplementation(
+        (path: string | Buffer | URL | number) => {
+          return (
+            String(path).includes('test.srt') ||
+            String(path).includes('.srt2fcpxrc.json')
+          )
+        },
+      )
 
       const result = processCliCommand(testSrtPath, defaultOptions)
 
       expect(result.success).toBe(true)
       expect(mockReadFileSync).toHaveBeenCalledWith(
         expect.stringContaining('.srt2fcpxrc.json'),
-        'utf-8'
+        'utf-8',
       )
     })
 
@@ -170,9 +176,11 @@ Test subtitle
     })
 
     it('should handle missing specified config file gracefully', () => {
-      mockExistsSync.mockImplementation((path: any) => {
-        return path.toString().includes('test.srt') // Only SRT exists
-      })
+      mockExistsSync.mockImplementation(
+        (path: string | Buffer | URL | number) => {
+          return String(path).includes('test.srt') // Only SRT exists
+        },
+      )
 
       const options = { ...defaultOptions, config: testConfigPath }
       const result = processCliCommand(testSrtPath, options)
@@ -181,12 +189,14 @@ Test subtitle
     })
 
     it('should handle malformed config file gracefully', () => {
-      mockReadFileSync.mockImplementation((path: any) => {
-        if (path.toString().includes('.srt2fcpxrc.json')) {
-          return '{ invalid json'
-        }
-        return mockSrtContent
-      })
+      mockReadFileSync.mockImplementation(
+        (path: string | Buffer | URL | number) => {
+          if (String(path).includes('.srt2fcpxrc.json')) {
+            return '{ invalid json'
+          }
+          return mockSrtContent
+        },
+      )
 
       const result = processCliCommand(testSrtPath, defaultOptions)
 
@@ -196,12 +206,14 @@ Test subtitle
 
   describe('CLI options merging', () => {
     it('should prioritize CLI options over config file', () => {
-      mockReadFileSync.mockImplementation((path: any) => {
-        if (path.toString().includes('.srt2fcpxrc.json')) {
-          return JSON.stringify({ title: 'Config Title', fps: 30 })
-        }
-        return mockSrtContent
-      })
+      mockReadFileSync.mockImplementation(
+        (path: string | Buffer | URL | number) => {
+          if (String(path).includes('.srt2fcpxrc.json')) {
+            return JSON.stringify({ title: 'Config Title', fps: 30 })
+          }
+          return mockSrtContent
+        },
+      )
 
       const options = { ...defaultOptions, title: 'CLI Title' }
       const result = processCliCommand(testSrtPath, options)
@@ -211,16 +223,18 @@ Test subtitle
     })
 
     it('should merge config values where CLI uses defaults', () => {
-      mockReadFileSync.mockImplementation((path: any) => {
-        if (path.toString().includes('.srt2fcpxrc.json')) {
-          return JSON.stringify({
-            title: 'Config Project',
-            font: 'Times New Roman',
-            size: 96
-          })
-        }
-        return mockSrtContent
-      })
+      mockReadFileSync.mockImplementation(
+        (path: string | Buffer | URL | number) => {
+          if (String(path).includes('.srt2fcpxrc.json')) {
+            return JSON.stringify({
+              title: 'Config Project',
+              font: 'Times New Roman',
+              size: 96,
+            })
+          }
+          return mockSrtContent
+        },
+      )
 
       const result = processCliCommand(testSrtPath, defaultOptions)
 
@@ -229,15 +243,17 @@ Test subtitle
     })
 
     it('should handle special strokeWidth merging logic', () => {
-      mockReadFileSync.mockImplementation((path: any) => {
-        if (path.toString().includes('.srt2fcpxrc.json')) {
-          return JSON.stringify({
-            strokeWidth: 3,
-            strokeColor: '#FF0000FF'
-          })
-        }
-        return mockSrtContent
-      })
+      mockReadFileSync.mockImplementation(
+        (path: string | Buffer | URL | number) => {
+          if (String(path).includes('.srt2fcpxrc.json')) {
+            return JSON.stringify({
+              strokeWidth: 3,
+              strokeColor: '#FF0000FF',
+            })
+          }
+          return mockSrtContent
+        },
+      )
 
       const result = processCliCommand(testSrtPath, defaultOptions)
 
@@ -295,11 +311,11 @@ Test subtitle
   describe('Path resolution', () => {
     it('should resolve relative input paths correctly', () => {
       const relativePath = './relative/test.srt'
-      const result = processCliCommand(relativePath, defaultOptions)
+      const _result = processCliCommand(relativePath, defaultOptions)
 
       expect(mockReadFileSync).toHaveBeenCalledWith(
         expect.stringContaining('relative/test.srt'),
-        'utf-8'
+        'utf-8',
       )
     })
 
@@ -308,14 +324,13 @@ Test subtitle
       const result = processCliCommand(testSrtPath, options)
 
       if (!result.success) {
-        console.log('Error in test:', result.error)
       }
       expect(result.success).toBe(true)
       expect(result.outputFile).toBe('./output/test.fcpxml')
       expect(mockWriteFileSync).toHaveBeenCalledWith(
         expect.stringContaining('output/test.fcpxml'),
         '<fcpxml>test</fcpxml>',
-        'utf-8'
+        'utf-8',
       )
     })
 

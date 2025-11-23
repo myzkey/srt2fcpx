@@ -34,6 +34,8 @@
     "copy-fixtures": "mkdir -p dist/fixtures && cp -r ../core/src/fixtures/* dist/fixtures/",
     "clean": "rm -rf dist",
     "dev": "tsx src/cli.ts",
+    "lint": "biome check src",
+    "lint:fix": "biome check --write src",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
