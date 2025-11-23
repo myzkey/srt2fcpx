@@ -128,7 +128,10 @@ export function writeOutputFile(content: string, outputPath: string): void {
   const workingDir = resolve(process.cwd())
 
   // Prevent path traversal attacks - only allow within current directory
-  if (!resolvedPath.startsWith(workingDir + sep) && resolvedPath !== workingDir) {
+  if (
+    !resolvedPath.startsWith(workingDir + sep) &&
+    resolvedPath !== workingDir
+  ) {
     throw new Error(
       `Security Error: Output path must be within the current working directory. Provided path: ${outputPath}`,
     )
