@@ -13,7 +13,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
       include: ['src/**/*.ts'],
-      exclude: ['src/**/*.spec.ts', 'src/**/*.test.ts'],
+      exclude: [
+        'src/**/*.spec.ts',
+        'src/**/*.test.ts',
+        'src/cli.ts',      // Thin CLI wrapper
+        'src/index.ts'     // Export-only file
+      ],
       thresholds: {
         global: {
           branches: 80,
