@@ -1,5 +1,16 @@
 # srt2fcpx
 
+## 0.0.8
+
+### Patch Changes
+
+- 225246f: Update CLI with enhanced XML escaping security measures
+
+  - Incorporates comprehensive XML security improvements from core library
+  - Enhanced protection against XML injection attacks
+  - Improved Unicode character handling while filtering dangerous content
+  - More robust FCPXML generation with context-aware escaping
+
 ## 0.0.7
 
 ### Patch Changes
