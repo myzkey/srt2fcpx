@@ -197,6 +197,26 @@ export function decodeHtmlEntities(text: string): string {
 }
 
 /**
+ * Validate style attribute values to prevent CSS injection attacks
+ */
+function validateStyleAttribute(styleValue: string): boolean {
+  const dangerousPatterns = [
+    /javascript:/i,    // JavaScript URLs
+    /data:/i,          // Data URLs
+    /expression\s*\(/i, // IE CSS expressions
+    /behavior\s*:/i,   // IE behaviors
+    /-moz-binding:/i,  // Firefox bindings
+    /@import/i,        // CSS imports
+    /url\s*\(/i,       // URL functions (could contain data: or javascript:)
+    /vbscript:/i,      // VBScript URLs
+    /&\s*\{/,          // IE conditional comments in CSS
+    /\/\*[\s\S]*?\*\// // CSS comments (could hide injection)
+  ]
+
+  return !dangerousPatterns.some(pattern => pattern.test(styleValue))
+}
+
+/**
  * Strip HTML-like tags from text with enhanced security and functionality
  */
 export function stripHtmlTags(text: string): string {
@@ -208,6 +228,17 @@ export function stripHtmlTags(text: string): string {
   // Remove script and style content (security measure)
   cleaned = cleaned.replace(/<script[\s\S]*?<\/script>/gi, '')
   cleaned = cleaned.replace(/<style[\s\S]*?<\/style>/gi, '')
+
+  // Validate and remove dangerous style attributes (CSS injection prevention)
+  cleaned = cleaned.replace(/\bstyle\s*=\s*["']([^"']*)["']/gi, (match, styleValue) => {
+    if (!validateStyleAttribute(styleValue)) {
+      // Remove dangerous style attributes entirely
+      return ''
+    }
+    // For safe styles, we still remove them since we're stripping tags anyway
+    // This maintains the existing behavior while adding security validation
+    return ''
+  })
 
   // Handle specific tags that should be removed without spaces
   // Formatting tags and inline tags that don't affect word separation

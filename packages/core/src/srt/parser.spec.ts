@@ -380,6 +380,66 @@ Text`
       const expected = 'Warning: Danger ahead! Please be careful.'
       expect(stripHtmlTags(input)).toBe(expected)
     })
+
+    it('should prevent CSS injection attacks', () => {
+      // JavaScript URLs in styles
+      expect(stripHtmlTags('<p style="background: url(javascript:alert(1))">Text</p>')).toBe('Text')
+      expect(stripHtmlTags('<span style="background-image: url(\'javascript:alert(1)\')">Test</span>')).toBe('Test')
+
+      // Data URLs in styles
+      expect(stripHtmlTags('<div style="background: url(data:text/html,<script>alert(1)</script>)">Content</div>')).toBe('Content')
+
+      // IE CSS expressions
+      expect(stripHtmlTags('<div style="width: expression(alert(1))">Dangerous</div>')).toBe('Dangerous')
+      expect(stripHtmlTags('<p style="color: expression(document.cookie)">Info leak</p>')).toBe('Info leak')
+
+      // IE behaviors
+      expect(stripHtmlTags('<span style="behavior: url(malicious.htc)">Behavior</span>')).toBe('Behavior')
+
+      // Firefox bindings
+      expect(stripHtmlTags('<div style="-moz-binding: url(http://evil.com/evil.xml)">Firefox</div>')).toBe('Firefox')
+
+      // CSS imports
+      expect(stripHtmlTags('<style>@import url("http://evil.com/evil.css")</style><div>Import</div>')).toBe('Import')
+
+      // VBScript URLs
+      expect(stripHtmlTags('<p style="background: url(vbscript:msgbox(1))">VBScript</p>')).toBe('VBScript')
+    })
+
+    it('should handle safe CSS styles (still removing them)', () => {
+      // Safe styles should be removed but not cause errors
+      expect(stripHtmlTags('<p style="color: red;">Safe color</p>')).toBe('Safe color')
+      expect(stripHtmlTags('<div style="font-size: 12px; margin: 10px;">Safe formatting</div>')).toBe('Safe formatting')
+      expect(stripHtmlTags('<span style="text-align: center;">Centered</span>')).toBe('Centered')
+    })
+
+    it('should handle mixed dangerous and safe styles', () => {
+      const input = '<div style="color: red; background: url(javascript:alert(1)); font-size: 12px;">Mixed</div>'
+      expect(stripHtmlTags(input)).toBe('Mixed')
+    })
+
+    it('should handle style attributes with various quote styles', () => {
+      // Single quotes
+      expect(stripHtmlTags('<p style=\'background: url("javascript:alert(1)")\'>Single quotes</p>')).toBe('Single quotes')
+
+      // Double quotes
+      expect(stripHtmlTags('<p style="background: url(javascript:alert(1))">Double quotes</p>')).toBe('Double quotes')
+
+      // Mixed quotes in content
+      expect(stripHtmlTags('<div style="background: url(\'data:text/html,<script>alert(1)</script>\')">Mixed</div>')).toBe('Mixed')
+    })
+
+    it('should handle CSS comments in style attributes', () => {
+      expect(stripHtmlTags('<div style="color: red; /* comment */ background: url(javascript:alert(1));">Comments</div>')).toBe('Comments')
+      expect(stripHtmlTags('<p style="/* javascript:alert(1) */ color: blue;">Hidden JS</p>')).toBe('Hidden JS')
+    })
+
+    it('should handle malformed style attributes', () => {
+      // Unclosed quotes, missing values, etc.
+      expect(stripHtmlTags('<p style="color:">Malformed</p>')).toBe('Malformed')
+      expect(stripHtmlTags('<div style="">Empty style</div>')).toBe('Empty style')
+      expect(stripHtmlTags('<span style="color: red; background: url(javascript:">Unclosed</span>')).toBe('Unclosed')
+    })
   })
 
   describe('decodeHtmlEntities', () => {
