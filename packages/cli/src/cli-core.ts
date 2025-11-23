@@ -13,21 +13,11 @@ import { logger } from './logger.js'
 
 /**
  * CLI command options interface
+ * All options are optional except for output, config, and quiet
+ * which are CLI-specific options
  */
-export interface CliCommandOptions {
+export interface CliCommandOptions extends Partial<CliOptions> {
   output?: string
-  title: string
-  fps: number
-  width: number
-  height: number
-  font: string
-  size: number
-  face: string
-  color: string
-  bg: string
-  strokeColor: string
-  strokeWidth: number
-  formatVersion: string
   config?: string
   quiet?: boolean
 }
@@ -210,18 +200,18 @@ export function processCliCommand(
 
     // Merge config: CLI options > config file > defaults
     const cliOptions: CliOptions = {
-      title: options.title,
-      fps: options.fps,
-      width: options.width,
-      height: options.height,
-      font: options.font,
-      size: options.size,
-      face: options.face,
-      color: options.color,
-      bg: options.bg,
-      strokeColor: options.strokeColor,
-      strokeWidth: options.strokeWidth,
-      formatVersion: options.formatVersion,
+      title: options.title ?? DEFAULT_CONFIG.title,
+      fps: options.fps ?? DEFAULT_CONFIG.fps,
+      width: options.width ?? DEFAULT_CONFIG.width,
+      height: options.height ?? DEFAULT_CONFIG.height,
+      font: options.font ?? DEFAULT_CONFIG.font,
+      size: options.size ?? DEFAULT_CONFIG.size,
+      face: options.face ?? DEFAULT_CONFIG.face,
+      color: options.color ?? DEFAULT_CONFIG.color,
+      bg: options.bg ?? DEFAULT_CONFIG.bg,
+      strokeColor: options.strokeColor ?? DEFAULT_CONFIG.strokeColor,
+      strokeWidth: options.strokeWidth ?? DEFAULT_CONFIG.strokeWidth,
+      formatVersion: options.formatVersion ?? DEFAULT_CONFIG.formatVersion,
     }
 
     const mergedOptions = mergeConfig(cliOptions, config)
