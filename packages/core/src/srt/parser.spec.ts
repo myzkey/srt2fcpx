@@ -421,9 +421,9 @@ Text`
     })
 
     it('should handle invalid entities gracefully', () => {
-      expect(decodeHtmlEntities('&#999999;')).toBe('') // Out of range
+      expect(decodeHtmlEntities('&#2000000;')).toBe('') // Out of range (beyond 0x10FFFF)
       expect(decodeHtmlEntities('&#-1;')).toBe('') // Negative
-      expect(decodeHtmlEntities('&#x999999;')).toBe('') // Out of range hex
+      expect(decodeHtmlEntities('&#x200000;')).toBe('') // Out of range hex (beyond 0x10FFFF)
       expect(decodeHtmlEntities('&invalid;')).toBe('&invalid;') // Unknown entity
     })
 
@@ -438,6 +438,79 @@ Text`
       expect(decodeHtmlEntities('No entities here')).toBe('No entities here')
       expect(decodeHtmlEntities('&;')).toBe('&;') // Incomplete entity
       expect(decodeHtmlEntities('&#;')).toBe('&#;') // Incomplete numeric entity
+    })
+
+    it('should decode Unicode supplementary characters (emoji and symbols)', () => {
+      // Test emoji in Unicode supplementary planes (U+10000 and above)
+      expect(decodeHtmlEntities('&#128512;')).toBe('😀') // U+1F600 (grinning face)
+      expect(decodeHtmlEntities('&#128513;')).toBe('😁') // U+1F601 (grinning face with smiling eyes)
+      expect(decodeHtmlEntities('&#128514;')).toBe('😂') // U+1F602 (face with tears of joy)
+      expect(decodeHtmlEntities('&#129315;')).toBe('🤣') // U+1F923 (rolling on floor laughing)
+
+      // Test heart emoji
+      expect(decodeHtmlEntities('&#10084;')).toBe('❤') // U+2764 (red heart)
+      expect(decodeHtmlEntities('&#128153;')).toBe('💙') // U+1F499 (blue heart)
+
+      // Test additional Unicode symbols
+      expect(decodeHtmlEntities('&#8364;')).toBe('€') // U+20AC (Euro sign)
+      expect(decodeHtmlEntities('&#9733;')).toBe('★') // U+2605 (Black star)
+
+      // Test in hexadecimal format
+      expect(decodeHtmlEntities('&#x1F600;')).toBe('😀') // U+1F600 (grinning face)
+      expect(decodeHtmlEntities('&#x1F601;')).toBe('😁') // U+1F601 (grinning face with smiling eyes)
+      expect(decodeHtmlEntities('&#x1F602;')).toBe('😂') // U+1F602 (face with tears of joy)
+      expect(decodeHtmlEntities('&#x1F923;')).toBe('🤣') // U+1F923 (rolling on floor laughing)
+
+      // Test case insensitive hex
+      expect(decodeHtmlEntities('&#X1F600;')).toBe('😀') // U+1F600 uppercase X
+      expect(decodeHtmlEntities('&#x1f600;')).toBe('😀') // U+1F600 lowercase hex
+    })
+
+    it('should handle Unicode edge cases and invalid ranges', () => {
+      // Test maximum valid Unicode code point
+      expect(decodeHtmlEntities('&#1114111;')).toBe('\u{10FFFF}') // U+10FFFF (max valid Unicode)
+      expect(decodeHtmlEntities('&#x10FFFF;')).toBe('\u{10FFFF}') // U+10FFFF in hex
+
+      // Test surrogate pair range (should be rejected)
+      expect(decodeHtmlEntities('&#55296;')).toBe('') // U+D800 (high surrogate start)
+      expect(decodeHtmlEntities('&#57343;')).toBe('') // U+DFFF (low surrogate end)
+      expect(decodeHtmlEntities('&#xD800;')).toBe('') // U+D800 in hex
+      expect(decodeHtmlEntities('&#xDFFF;')).toBe('') // U+DFFF in hex
+
+      // Test beyond valid Unicode range
+      expect(decodeHtmlEntities('&#1114112;')).toBe('') // U+110000 (beyond max)
+      expect(decodeHtmlEntities('&#2000000;')).toBe('') // Way beyond max
+      expect(decodeHtmlEntities('&#x110000;')).toBe('') // U+110000 in hex
+
+      // Test zero and negative numbers
+      expect(decodeHtmlEntities('&#0;')).toBe('') // NULL character (invalid)
+      expect(decodeHtmlEntities('&#-1;')).toBe('') // Negative (invalid)
+    })
+
+    it('should handle mixed Unicode content with traditional entities', () => {
+      // Mix of emoji, traditional entities, and plain text
+      const input = 'Hello &#128512; &amp; welcome &#x1F602; to our &lt;amazing&gt; world! &#129315;'
+      const expected = 'Hello 😀 & welcome 😂 to our <amazing> world! 🤣'
+      expect(decodeHtmlEntities(input)).toBe(expected)
+
+      // Test with Japanese characters and emoji
+      const japaneseInput = 'こんにちは &#128512; &amp; &#x1F44B; 世界！'
+      const japaneseExpected = 'こんにちは 😀 & 👋 世界！'
+      expect(decodeHtmlEntities(japaneseInput)).toBe(japaneseExpected)
+    })
+
+    it('should handle complex Unicode sequences', () => {
+      // Test with skin tone modifiers (though they may not be in SRT files typically)
+      expect(decodeHtmlEntities('&#128075;')).toBe('👋') // U+1F44B (waving hand)
+
+      // Test various symbols in supplementary planes
+      expect(decodeHtmlEntities('&#127881;')).toBe('🎉') // U+1F389 (party popper)
+      expect(decodeHtmlEntities('&#128640;')).toBe('🚀') // U+1F680 (rocket)
+      expect(decodeHtmlEntities('&#127775;')).toBe('🌟') // U+1F31F (glowing star)
+
+      // Test musical symbols
+      expect(decodeHtmlEntities('&#127925;')).toBe('🎵') // U+1F3B5 (musical note)
+      expect(decodeHtmlEntities('&#127926;')).toBe('🎶') // U+1F3B6 (multiple musical notes)
     })
   })
 })

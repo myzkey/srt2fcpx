@@ -154,12 +154,16 @@ export function decodeHtmlEntities(text: string): string {
   // Also handle negative numbers which should be treated as invalid
   decoded = decoded.replace(/&#(-?\d+);/g, (match, code) => {
     const num = parseInt(code, 10)
-    // Valid Unicode range: 1 to 1114111 (0x10FFFF)
+    // Valid Unicode range: 1 to 1114111 (0x10FFFF) - Full Unicode support
     // Exclude surrogate code points (0xD800-0xDFFF) and some control characters
-    if (num >= 1 && num <= 65535) {
-      // Use a more restrictive range to avoid issues with large numbers
+    if (num >= 1 && num <= 0x10FFFF) {
+      // Exclude surrogate pairs
+      if (num >= 0xD800 && num <= 0xDFFF) {
+        return '' // Invalid surrogate pair
+      }
       try {
-        const char = String.fromCharCode(num)
+        // String.fromCodePoint() for full Unicode support (including emoji)
+        const char = String.fromCodePoint(num)
         // Additional check to ensure it's a valid character
         return char && char !== '\uFFFD' ? char : ''
       } catch {
@@ -172,10 +176,15 @@ export function decodeHtmlEntities(text: string): string {
   // Handle hex entities (hex: &#x41; = 'A')
   decoded = decoded.replace(/&#x([0-9a-f]+);/gi, (match, hex) => {
     const num = parseInt(hex, 16)
-    // Valid Unicode range and exclude surrogates
-    if (num >= 1 && num <= 65535) {
+    // Valid Unicode range: 1 to 1114111 (0x10FFFF) - Full Unicode support
+    if (num >= 1 && num <= 0x10FFFF) {
+      // Exclude surrogate pairs
+      if (num >= 0xD800 && num <= 0xDFFF) {
+        return '' // Invalid surrogate pair
+      }
       try {
-        const char = String.fromCharCode(num)
+        // String.fromCodePoint() for full Unicode support (including emoji)
+        const char = String.fromCodePoint(num)
         return char && char !== '\uFFFD' ? char : ''
       } catch {
         return ''
