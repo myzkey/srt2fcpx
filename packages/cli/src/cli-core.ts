@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { basename, join, resolve } from 'node:path'
+import { basename, extname, join, resolve, sep } from 'node:path'
 import type { Srt2FcpxOptions } from '@srt2fcpx/core'
 import { convertSrtToFcpxml } from '@srt2fcpx/core'
 import {
@@ -42,12 +42,35 @@ export interface CliResult {
 }
 
 /**
+ * Validate config file path for security
+ */
+function validateConfigPath(configPath: string): string {
+  const resolvedPath = resolve(configPath)
+
+  // Detect path traversal attack patterns
+  if (configPath.includes('..') || configPath.includes('./')) {
+    throw new Error(
+      `Security Error: Config file path cannot contain relative path symbols. Provided path: ${configPath}`,
+    )
+  }
+
+  // Only allow .json extensions
+  if (!configPath.endsWith('.json')) {
+    throw new Error(
+      `Invalid config file extension: Config files must be in .json format. Provided path: ${configPath}`,
+    )
+  }
+
+  return resolvedPath
+}
+
+/**
  * Load config file from various locations
  * Priority: .srt2fcpxrc.json > srt2fcpx.config.json > ~/.srt2fcpxrc.json
  */
 export function loadConfigFile(configPath?: string): ConfigFile | null {
   const configPaths = configPath
-    ? [resolve(configPath)]
+    ? [validateConfigPath(configPath)]
     : [
         resolve(process.cwd(), '.srt2fcpxrc.json'),
         resolve(process.cwd(), 'srt2fcpx.config.json'),
@@ -102,6 +125,26 @@ export function readSrtFile(inputPath: string): string {
  */
 export function writeOutputFile(content: string, outputPath: string): void {
   const resolvedPath = resolve(outputPath)
+  const workingDir = resolve(process.cwd())
+
+  // Prevent path traversal attacks - only allow within current directory
+  if (
+    !resolvedPath.startsWith(workingDir + sep) &&
+    resolvedPath !== workingDir
+  ) {
+    throw new Error(
+      `Security Error: Output path must be within the current working directory. Provided path: ${outputPath}`,
+    )
+  }
+
+  // File extension validation - only allow FCPXML or XML files
+  const allowedExtensions = ['.fcpxml', '.xml']
+  const ext = extname(resolvedPath).toLowerCase()
+  if (!allowedExtensions.includes(ext)) {
+    throw new Error(
+      `Invalid file extension: ${ext}. Allowed extensions: ${allowedExtensions.join(', ')}`,
+    )
+  }
 
   try {
     writeFileSync(resolvedPath, content, 'utf-8')
