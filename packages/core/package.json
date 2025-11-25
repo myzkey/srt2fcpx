@@ -28,10 +28,10 @@
   "devDependencies": {
     "@srt2fcpx/tsconfig": "workspace:*",
     "@types/node": "^24.10.1",
-    "@vitest/coverage-v8": "^4.0.13",
-    "esbuild": "^0.24.2",
-    "tsc-alias": "^1.8.10",
+    "@vitest/coverage-v8": "^4.0.14",
+    "esbuild": "^0.27.0",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.13"
+    "vitest": "^4.0.14"
   }
 }
