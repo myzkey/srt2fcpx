@@ -2,11 +2,11 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { type CliCommandOptions, processCliCommand } from './cli-core.js'
-import { setQuiet } from './logger.js'
+import { type CliCommandOptions, processCliCommand } from './cli-core'
+import { setQuiet } from './logger'
 
 // Mock logger
-vi.mock('./logger.js', () => ({
+vi.mock('./logger', () => ({
   logger: {
     debug: vi.fn(),
     info: vi.fn(),
