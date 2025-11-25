@@ -1,5 +1,11 @@
 # srt2fcpx
 
+## 0.0.9
+
+### Patch Changes
+
+- 5134966: chore: fix lint issues and clean up imports
+
 ## 0.0.8
 
 ### Patch Changes
