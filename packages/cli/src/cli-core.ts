@@ -8,8 +8,8 @@ import {
   type ConfigFile,
   DEFAULT_CONFIG,
   mergeConfig,
-} from './config.js'
-import { logger } from './logger.js'
+} from './config'
+import { logger } from './logger'
 
 /**
  * CLI command options interface

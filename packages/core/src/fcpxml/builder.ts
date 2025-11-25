@@ -18,76 +18,66 @@ function millisecondsToFraction(ms: number, frameRate: number): string {
 }
 
 /**
- * Escape XML special characters with comprehensive security measures
- */
-function escapeXml(text: string): string {
-  return text
-    // First escape & to prevent double-escaping
-    .replace(/&/g, '&amp;')
-    // Basic XML entities
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
-    // Remove or escape invalid XML characters
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '') // Remove control characters
-    // Handle invalid Unicode surrogates and non-characters
-    .replace(/[\uD800-\uDFFF]/g, '') // Remove unpaired surrogates
-    .replace(/[\uFFFE\uFFFF]/g, '') // Remove non-characters
-}
-
-/**
  * Escape text specifically for XML attribute values
  */
 function escapeXmlAttribute(text: string): string {
-  return text
-    // First escape & to prevent double-escaping
-    .replace(/&/g, '&amp;')
-    // Basic XML entities for attributes
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    // Don't escape apostrophes in attributes when using double quotes
-    // Additional escaping for attribute context
-    .replace(/\n/g, '&#10;')  // Preserve newlines in attributes
-    .replace(/\r/g, '&#13;')  // Preserve carriage returns
-    .replace(/\t/g, '&#9;')   // Preserve tabs
-    // Remove dangerous control characters
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '')
-    .replace(/[\uD800-\uDFFF]/g, '')
-    .replace(/[\uFFFE\uFFFF]/g, '')
+  return (
+    text
+      // First escape & to prevent double-escaping
+      .replace(/&/g, '&amp;')
+      // Basic XML entities for attributes
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      // Don't escape apostrophes in attributes when using double quotes
+      // Additional escaping for attribute context
+      .replace(/\n/g, '&#10;') // Preserve newlines in attributes
+      .replace(/\r/g, '&#13;') // Preserve carriage returns
+      .replace(/\t/g, '&#9;') // Preserve tabs
+      // Remove dangerous control characters (intentional use of control chars)
+      // biome-ignore lint/suspicious/noControlCharactersInRegex: intentional removal of XML-invalid control chars
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '')
+      .replace(/[\uD800-\uDFFF]/g, '')
+      .replace(/[\uFFFE\uFFFF]/g, '')
+  )
 }
 
 /**
  * Escape text for XML content (between tags)
  */
 function escapeXmlContent(text: string): string {
-  return text
-    // Essential escaping for content
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
-    // Remove only the most dangerous control characters, preserve Unicode
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-    // Don't remove Unicode surrogates and non-characters - preserve international content
+  return (
+    text
+      // Essential escaping for content
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;')
+      // Remove only the most dangerous control characters, preserve Unicode
+      // biome-ignore lint/suspicious/noControlCharactersInRegex: intentional removal of XML-invalid control chars
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+  )
+  // Don't remove Unicode surrogates and non-characters - preserve international content
 }
 
 /**
  * Validate input for potential XML injection patterns
  */
-function validateXmlInput(input: string): { isValid: boolean; reason?: string } {
+function validateXmlInput(input: string): {
+  isValid: boolean
+  reason?: string
+} {
   // Check for suspicious patterns that might indicate XML injection attempts
   const dangerousPatterns = [
-    /<!(?:DOCTYPE|ENTITY)/i,     // DOCTYPE or ENTITY declarations
-    /<!-{2,}/,                   // Comment injection attempts
-    /<!\[CDATA\[/i,              // CDATA injection attempts
-    /\]\]>/,                     // CDATA closing attempts
-    /<\?xml/i,                   // XML declaration injection
-    /<script[^>]*>/i,            // Script tags
-    /javascript:/i,              // JavaScript protocol
-    /data:/i,                    // Data protocol
+    /<!(?:DOCTYPE|ENTITY)/i, // DOCTYPE or ENTITY declarations
+    /<!-{2,}/, // Comment injection attempts
+    /<!\[CDATA\[/i, // CDATA injection attempts
+    /\]\]>/, // CDATA closing attempts
+    /<\?xml/i, // XML declaration injection
+    /<script[^>]*>/i, // Script tags
+    /javascript:/i, // JavaScript protocol
+    /data:/i, // Data protocol
     // Note: Removed general entity check to allow legitimate HTML entities like &amp;
   ]
 
@@ -95,7 +85,7 @@ function validateXmlInput(input: string): { isValid: boolean; reason?: string } 
     if (pattern.test(input)) {
       return {
         isValid: false,
-        reason: `Potentially dangerous XML pattern detected: ${pattern.source}`
+        reason: `Potentially dangerous XML pattern detected: ${pattern.source}`,
       }
     }
   }
@@ -114,16 +104,18 @@ function sanitizeXmlInput(input: string): string {
   }
 
   // Apply sanitization
-  return input
-    // Remove any XML declaration or DOCTYPE
-    .replace(/<\?xml[^>]*\?>/gi, '')
-    .replace(/<!DOCTYPE[^>]*>/gi, '')
-    // Remove comments
-    .replace(/<!--[\s\S]*?-->/g, '')
-    // Remove CDATA sections (content will be escaped instead)
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-    // Remove processing instructions
-    .replace(/<\?[^>]*\?>/g, '')
+  return (
+    input
+      // Remove any XML declaration or DOCTYPE
+      .replace(/<\?xml[^>]*\?>/gi, '')
+      .replace(/<!DOCTYPE[^>]*>/gi, '')
+      // Remove comments
+      .replace(/<!--[\s\S]*?-->/g, '')
+      // Remove CDATA sections (content will be escaped instead)
+      .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+      // Remove processing instructions
+      .replace(/<\?[^>]*\?>/g, '')
+  )
 }
 
 /**

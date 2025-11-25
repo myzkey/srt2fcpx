@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { decodeHtmlEntities, formatSrtTimecode, parseSrt, stripHtmlTags } from './parser'
+import {
+  decodeHtmlEntities,
+  formatSrtTimecode,
+  parseSrt,
+  stripHtmlTags,
+} from './parser'
 
 describe('SRT Parser', () => {
   describe('parseSrt', () => {
@@ -326,18 +331,30 @@ Text`
 
     // Enhanced tests for improved functionality
     it('should remove HTML comments', () => {
-      expect(stripHtmlTags('Text <!-- comment --> more text')).toBe('Text more text')
-      expect(stripHtmlTags('<!-- Start comment -->Text<!-- End comment -->')).toBe('Text')
+      expect(stripHtmlTags('Text <!-- comment --> more text')).toBe(
+        'Text more text',
+      )
+      expect(
+        stripHtmlTags('<!-- Start comment -->Text<!-- End comment -->'),
+      ).toBe('Text')
     })
 
     it('should remove script tags (security)', () => {
-      expect(stripHtmlTags('Text<script>alert("XSS")</script>more')).toBe('Textmore')
-      expect(stripHtmlTags('<script src="malicious.js"></script>Clean text')).toBe('Clean text')
+      expect(stripHtmlTags('Text<script>alert("XSS")</script>more')).toBe(
+        'Textmore',
+      )
+      expect(
+        stripHtmlTags('<script src="malicious.js"></script>Clean text'),
+      ).toBe('Clean text')
     })
 
     it('should remove style tags', () => {
-      expect(stripHtmlTags('Text<style>body{color:red}</style>more')).toBe('Textmore')
-      expect(stripHtmlTags('<style type="text/css">.class{}</style>Clean')).toBe('Clean')
+      expect(stripHtmlTags('Text<style>body{color:red}</style>more')).toBe(
+        'Textmore',
+      )
+      expect(
+        stripHtmlTags('<style type="text/css">.class{}</style>Clean'),
+      ).toBe('Clean')
     })
 
     it('should handle malformed tags', () => {
@@ -359,13 +376,16 @@ Text`
     })
 
     it('should handle complex nested HTML', () => {
-      const input = '<div class="subtitle"><b>Bold <i>and italic</i></b> &amp; <u>underline</u></div>'
+      const input =
+        '<div class="subtitle"><b>Bold <i>and italic</i></b> &amp; <u>underline</u></div>'
       const expected = 'Bold and italic & underline'
       expect(stripHtmlTags(input)).toBe(expected)
     })
 
     it('should clean up excessive whitespace', () => {
-      expect(stripHtmlTags('  Multiple   \n  \t  spaces  ')).toBe('Multiple\nspaces')
+      expect(stripHtmlTags('  Multiple   \n  \t  spaces  ')).toBe(
+        'Multiple\nspaces',
+      )
       expect(stripHtmlTags('<br>Line1<br/><br>Line2<br>')).toBe('Line1Line2')
     })
 
@@ -376,69 +396,141 @@ Text`
     })
 
     it('should handle real-world SRT content', () => {
-      const input = '<font color="yellow">Warning:</font> <b>Danger ahead!</b><br>Please be careful.'
+      const input =
+        '<font color="yellow">Warning:</font> <b>Danger ahead!</b><br>Please be careful.'
       const expected = 'Warning: Danger ahead! Please be careful.'
       expect(stripHtmlTags(input)).toBe(expected)
     })
 
     it('should prevent CSS injection attacks', () => {
       // JavaScript URLs in styles
-      expect(stripHtmlTags('<p style="background: url(javascript:alert(1))">Text</p>')).toBe('Text')
-      expect(stripHtmlTags('<span style="background-image: url(\'javascript:alert(1)\')">Test</span>')).toBe('Test')
+      expect(
+        stripHtmlTags(
+          '<p style="background: url(javascript:alert(1))">Text</p>',
+        ),
+      ).toBe('Text')
+      expect(
+        stripHtmlTags(
+          '<span style="background-image: url(\'javascript:alert(1)\')">Test</span>',
+        ),
+      ).toBe('Test')
 
       // Data URLs in styles
-      expect(stripHtmlTags('<div style="background: url(data:text/html,<script>alert(1)</script>)">Content</div>')).toBe('Content')
+      expect(
+        stripHtmlTags(
+          '<div style="background: url(data:text/html,<script>alert(1)</script>)">Content</div>',
+        ),
+      ).toBe('Content')
 
       // IE CSS expressions
-      expect(stripHtmlTags('<div style="width: expression(alert(1))">Dangerous</div>')).toBe('Dangerous')
-      expect(stripHtmlTags('<p style="color: expression(document.cookie)">Info leak</p>')).toBe('Info leak')
+      expect(
+        stripHtmlTags(
+          '<div style="width: expression(alert(1))">Dangerous</div>',
+        ),
+      ).toBe('Dangerous')
+      expect(
+        stripHtmlTags(
+          '<p style="color: expression(document.cookie)">Info leak</p>',
+        ),
+      ).toBe('Info leak')
 
       // IE behaviors
-      expect(stripHtmlTags('<span style="behavior: url(malicious.htc)">Behavior</span>')).toBe('Behavior')
+      expect(
+        stripHtmlTags(
+          '<span style="behavior: url(malicious.htc)">Behavior</span>',
+        ),
+      ).toBe('Behavior')
 
       // Firefox bindings
-      expect(stripHtmlTags('<div style="-moz-binding: url(http://evil.com/evil.xml)">Firefox</div>')).toBe('Firefox')
+      expect(
+        stripHtmlTags(
+          '<div style="-moz-binding: url(http://evil.com/evil.xml)">Firefox</div>',
+        ),
+      ).toBe('Firefox')
 
       // CSS imports
-      expect(stripHtmlTags('<style>@import url("http://evil.com/evil.css")</style><div>Import</div>')).toBe('Import')
+      expect(
+        stripHtmlTags(
+          '<style>@import url("http://evil.com/evil.css")</style><div>Import</div>',
+        ),
+      ).toBe('Import')
 
       // VBScript URLs
-      expect(stripHtmlTags('<p style="background: url(vbscript:msgbox(1))">VBScript</p>')).toBe('VBScript')
+      expect(
+        stripHtmlTags(
+          '<p style="background: url(vbscript:msgbox(1))">VBScript</p>',
+        ),
+      ).toBe('VBScript')
     })
 
     it('should handle safe CSS styles (still removing them)', () => {
       // Safe styles should be removed but not cause errors
-      expect(stripHtmlTags('<p style="color: red;">Safe color</p>')).toBe('Safe color')
-      expect(stripHtmlTags('<div style="font-size: 12px; margin: 10px;">Safe formatting</div>')).toBe('Safe formatting')
-      expect(stripHtmlTags('<span style="text-align: center;">Centered</span>')).toBe('Centered')
+      expect(stripHtmlTags('<p style="color: red;">Safe color</p>')).toBe(
+        'Safe color',
+      )
+      expect(
+        stripHtmlTags(
+          '<div style="font-size: 12px; margin: 10px;">Safe formatting</div>',
+        ),
+      ).toBe('Safe formatting')
+      expect(
+        stripHtmlTags('<span style="text-align: center;">Centered</span>'),
+      ).toBe('Centered')
     })
 
     it('should handle mixed dangerous and safe styles', () => {
-      const input = '<div style="color: red; background: url(javascript:alert(1)); font-size: 12px;">Mixed</div>'
+      const input =
+        '<div style="color: red; background: url(javascript:alert(1)); font-size: 12px;">Mixed</div>'
       expect(stripHtmlTags(input)).toBe('Mixed')
     })
 
     it('should handle style attributes with various quote styles', () => {
       // Single quotes
-      expect(stripHtmlTags('<p style=\'background: url("javascript:alert(1)")\'>Single quotes</p>')).toBe('Single quotes')
+      expect(
+        stripHtmlTags(
+          '<p style=\'background: url("javascript:alert(1)")\'>Single quotes</p>',
+        ),
+      ).toBe('Single quotes')
 
       // Double quotes
-      expect(stripHtmlTags('<p style="background: url(javascript:alert(1))">Double quotes</p>')).toBe('Double quotes')
+      expect(
+        stripHtmlTags(
+          '<p style="background: url(javascript:alert(1))">Double quotes</p>',
+        ),
+      ).toBe('Double quotes')
 
       // Mixed quotes in content
-      expect(stripHtmlTags('<div style="background: url(\'data:text/html,<script>alert(1)</script>\')">Mixed</div>')).toBe('Mixed')
+      expect(
+        stripHtmlTags(
+          '<div style="background: url(\'data:text/html,<script>alert(1)</script>\')">Mixed</div>',
+        ),
+      ).toBe('Mixed')
     })
 
     it('should handle CSS comments in style attributes', () => {
-      expect(stripHtmlTags('<div style="color: red; /* comment */ background: url(javascript:alert(1));">Comments</div>')).toBe('Comments')
-      expect(stripHtmlTags('<p style="/* javascript:alert(1) */ color: blue;">Hidden JS</p>')).toBe('Hidden JS')
+      expect(
+        stripHtmlTags(
+          '<div style="color: red; /* comment */ background: url(javascript:alert(1));">Comments</div>',
+        ),
+      ).toBe('Comments')
+      expect(
+        stripHtmlTags(
+          '<p style="/* javascript:alert(1) */ color: blue;">Hidden JS</p>',
+        ),
+      ).toBe('Hidden JS')
     })
 
     it('should handle malformed style attributes', () => {
       // Unclosed quotes, missing values, etc.
       expect(stripHtmlTags('<p style="color:">Malformed</p>')).toBe('Malformed')
-      expect(stripHtmlTags('<div style="">Empty style</div>')).toBe('Empty style')
-      expect(stripHtmlTags('<span style="color: red; background: url(javascript:">Unclosed</span>')).toBe('Unclosed')
+      expect(stripHtmlTags('<div style="">Empty style</div>')).toBe(
+        'Empty style',
+      )
+      expect(
+        stripHtmlTags(
+          '<span style="color: red; background: url(javascript:">Unclosed</span>',
+        ),
+      ).toBe('Unclosed')
     })
   })
 
@@ -477,7 +569,9 @@ Text`
     })
 
     it('should handle multiple entities in text', () => {
-      expect(decodeHtmlEntities('AT&amp;T &lt;company&gt; &quot;quotes&quot;')).toBe('AT&T <company> "quotes"')
+      expect(
+        decodeHtmlEntities('AT&amp;T &lt;company&gt; &quot;quotes&quot;'),
+      ).toBe('AT&T <company> "quotes"')
     })
 
     it('should handle invalid entities gracefully', () => {
@@ -549,7 +643,8 @@ Text`
 
     it('should handle mixed Unicode content with traditional entities', () => {
       // Mix of emoji, traditional entities, and plain text
-      const input = 'Hello &#128512; &amp; welcome &#x1F602; to our &lt;amazing&gt; world! &#129315;'
+      const input =
+        'Hello &#128512; &amp; welcome &#x1F602; to our &lt;amazing&gt; world! &#129315;'
       const expected = 'Hello 😀 & welcome 😂 to our <amazing> world! 🤣'
       expect(decodeHtmlEntities(input)).toBe(expected)
 

@@ -16,8 +16,8 @@ export default defineConfig({
       exclude: [
         'src/**/*.spec.ts',
         'src/**/*.test.ts',
-        'src/cli.ts',      // Thin CLI wrapper
-        'src/index.ts'     // Export-only file
+        'src/cli.ts', // Thin CLI wrapper
+        'src/index.ts', // Export-only file
       ],
       thresholds: {
         global: {

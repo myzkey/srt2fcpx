@@ -147,18 +147,21 @@ export function decodeHtmlEntities(text: string): string {
 
   // Handle named entities (case insensitive)
   for (const [entity, char] of Object.entries(HTML_ENTITIES)) {
-    decoded = decoded.replace(new RegExp(entity.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), char)
+    decoded = decoded.replace(
+      new RegExp(entity.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'),
+      char,
+    )
   }
 
   // Handle numeric entities (decimal: &#65; = 'A')
   // Also handle negative numbers which should be treated as invalid
-  decoded = decoded.replace(/&#(-?\d+);/g, (match, code) => {
+  decoded = decoded.replace(/&#(-?\d+);/g, (_match, code) => {
     const num = parseInt(code, 10)
     // Valid Unicode range: 1 to 1114111 (0x10FFFF) - Full Unicode support
     // Exclude surrogate code points (0xD800-0xDFFF) and some control characters
-    if (num >= 1 && num <= 0x10FFFF) {
+    if (num >= 1 && num <= 0x10ffff) {
       // Exclude surrogate pairs
-      if (num >= 0xD800 && num <= 0xDFFF) {
+      if (num >= 0xd800 && num <= 0xdfff) {
         return '' // Invalid surrogate pair
       }
       try {
@@ -174,12 +177,12 @@ export function decodeHtmlEntities(text: string): string {
   })
 
   // Handle hex entities (hex: &#x41; = 'A')
-  decoded = decoded.replace(/&#x([0-9a-f]+);/gi, (match, hex) => {
+  decoded = decoded.replace(/&#x([0-9a-f]+);/gi, (_match, hex) => {
     const num = parseInt(hex, 16)
     // Valid Unicode range: 1 to 1114111 (0x10FFFF) - Full Unicode support
-    if (num >= 1 && num <= 0x10FFFF) {
+    if (num >= 1 && num <= 0x10ffff) {
       // Exclude surrogate pairs
-      if (num >= 0xD800 && num <= 0xDFFF) {
+      if (num >= 0xd800 && num <= 0xdfff) {
         return '' // Invalid surrogate pair
       }
       try {
@@ -201,19 +204,19 @@ export function decodeHtmlEntities(text: string): string {
  */
 function validateStyleAttribute(styleValue: string): boolean {
   const dangerousPatterns = [
-    /javascript:/i,    // JavaScript URLs
-    /data:/i,          // Data URLs
+    /javascript:/i, // JavaScript URLs
+    /data:/i, // Data URLs
     /expression\s*\(/i, // IE CSS expressions
-    /behavior\s*:/i,   // IE behaviors
-    /-moz-binding:/i,  // Firefox bindings
-    /@import/i,        // CSS imports
-    /url\s*\(/i,       // URL functions (could contain data: or javascript:)
-    /vbscript:/i,      // VBScript URLs
-    /&\s*\{/,          // IE conditional comments in CSS
-    /\/\*[\s\S]*?\*\// // CSS comments (could hide injection)
+    /behavior\s*:/i, // IE behaviors
+    /-moz-binding:/i, // Firefox bindings
+    /@import/i, // CSS imports
+    /url\s*\(/i, // URL functions (could contain data: or javascript:)
+    /vbscript:/i, // VBScript URLs
+    /&\s*\{/, // IE conditional comments in CSS
+    /\/\*[\s\S]*?\*\//, // CSS comments (could hide injection)
   ]
 
-  return !dangerousPatterns.some(pattern => pattern.test(styleValue))
+  return !dangerousPatterns.some((pattern) => pattern.test(styleValue))
 }
 
 /**
@@ -230,19 +233,25 @@ export function stripHtmlTags(text: string): string {
   cleaned = cleaned.replace(/<style[\s\S]*?<\/style>/gi, '')
 
   // Validate and remove dangerous style attributes (CSS injection prevention)
-  cleaned = cleaned.replace(/\bstyle\s*=\s*["']([^"']*)["']/gi, (match, styleValue) => {
-    if (!validateStyleAttribute(styleValue)) {
-      // Remove dangerous style attributes entirely
+  cleaned = cleaned.replace(
+    /\bstyle\s*=\s*["']([^"']*)["']/gi,
+    (_match, styleValue) => {
+      if (!validateStyleAttribute(styleValue)) {
+        // Remove dangerous style attributes entirely
+        return ''
+      }
+      // For safe styles, we still remove them since we're stripping tags anyway
+      // This maintains the existing behavior while adding security validation
       return ''
-    }
-    // For safe styles, we still remove them since we're stripping tags anyway
-    // This maintains the existing behavior while adding security validation
-    return ''
-  })
+    },
+  )
 
   // Handle specific tags that should be removed without spaces
   // Formatting tags and inline tags that don't affect word separation
-  cleaned = cleaned.replace(/<\/?(?:b|i|u|strong|em|font|small|sub|sup|span|a)(?:\s[^>]*)?\/?>/gi, '')
+  cleaned = cleaned.replace(
+    /<\/?(?:b|i|u|strong|em|font|small|sub|sup|span|a)(?:\s[^>]*)?\/?>/gi,
+    '',
+  )
 
   // Line break tags
   cleaned = cleaned.replace(/<\/?(?:hr)(?:\s[^>]*)?\/?>/gi, '')
