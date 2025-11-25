@@ -64,4 +64,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-          # No NPM_TOKEN needed for Trusted Publishers (OIDC)
+
+      - name: Create Git Tags for Published Packages
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          echo "Published packages: ${{ steps.changesets.outputs.publishedPackages }}"
+          PACKAGES='${{ steps.changesets.outputs.publishedPackages }}'
+          # Create v{version} tag for main CLI package
+          VERSION=$(echo "$PACKAGES" | jq -r '.[] | select(.name == "srt2fcpx") | .version')
+          if [ -n "$VERSION" ]; then
+            TAG="v${VERSION}"
+            echo "Creating tag: $TAG"
+            git tag "$TAG" 2>/dev/null || echo "Tag $TAG already exists"
+            git push --tags
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
